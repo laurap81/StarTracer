@@ -9,6 +9,17 @@ import warnings
 import numpy as np
 
 
+# todo: just realized I can't let them pass in a skycoord because I need to use errors
+#  -> let them pass in path or table like initially planned with data and errors.
+#  Sample from the data and errors and pass them to the traceback functions as lists of Quantities
+
+# todo: also, simply return table of 'cluster: timestep x sample' | 'single: timestep x star x sample'
+#  and add another funtion to analyze (mean, median, std, mad, percentile)
+
+# todo: maybe add plot function
+
+
+########################################################################################################################
 def mad(array, axis=1):
     """
     function calculates the median absolut deviation of a 1D or 2D array along either axis.
@@ -27,8 +38,10 @@ def mad(array, axis=1):
     else:
         raise 'dimension not implemented'
     return median_absolut_deviation
+########################################################################################################################
 
 
+########################################################################################################################
 def skycoord_from_table(path_to_file):
     """
     create a astropy.coordinates.SkyCoord from some input table. if no column found that is called 'distance',
@@ -56,18 +69,10 @@ def skycoord_from_table(path_to_file):
                                radial_velocity=unit.Quantity(itable['radial_velocity'].value * unit.km / unit.s))
 
     return skycoord_object
+########################################################################################################################
 
 
-# todo: just realized I can't let them pass in a skycoord because I need to use errors
-#  -> let them pass in path or table like initially planned with data and errors.
-#  Sample from the data and errors and pass them to the traceback functions as lists of Quantities
-
-# todo: also, simply return table of 'cluster: timestep x sample' | 'single: timestep x star x sample'
-#  and add another funtion to analyze (mean, median, std, mad, percentile)
-
-# todo: maybe add plot function
-
-
+########################################################################################################################
 def read_table_to_df(filepath_or_table):
     """
     reading in a table and/or converting the input to a pandas dataframe, if it is not already.
@@ -106,8 +111,10 @@ def read_table_to_df(filepath_or_table):
         raise 'Data input must be either a path to a table, a pandas dataframe or numpy ndarray.'
 
     return df
+########################################################################################################################
 
 
+########################################################################################################################
 def mc_sampling_orbits(filepath_or_table, number_of_samples, time_end, time_step, direction='both',
                        sample_method='cluster', average_method='mean',
                        reference_orbit_lsr=True, reference_object_pv=None,
@@ -152,15 +159,18 @@ def mc_sampling_orbits(filepath_or_table, number_of_samples, time_end, time_step
     print('-' * 100)
 
     # create time array for integration and time step size for uniform presentation
-    if isinstance(time_end, unit.Quantity):
-        time_end = time_end
+    if (isinstance(time_end, unit.Quantity)) & (isinstance(time_step, unit.Quantity)):
+        time_unit = time_end.unit
+        timerange = unit.Quantity(np.linspace(0, time_end.value, int(time_end / time_step) + 1), time_unit)
     else:
         time_end = unit.Quantity(time_end, unit.Myr)
-    timerange = np.linspace(0, time_end, int(time_end / time_step) + 1)
+        time_step = unit.Quantity(time_step, unit.Myr)
+        timerange = unit.Quantity(np.linspace(0, time_end.value, int(time_end / time_step) + 1), unit.Myr)
+
     if direction == 'both':
         arraylength = len(timerange) * 2 - 1
     elif (direction == 'backward') | (direction == 'forward'):
-        arraylength = len(timerange)
+        arraylength = len(timerange) - 1
     else:
         raise 'attribute "direction" needs to be one of the following: "backward", "forward", "both".'
 
@@ -213,6 +223,8 @@ def mc_sampling_orbits(filepath_or_table, number_of_samples, time_end, time_step
             n_pmdec = np.random.normal(pmdec, pmdec_error) * unit.mas / unit.yr
             n_vr = np.random.normal(radial_velocity, radial_velocity_error) * unit.km / unit.s
 
+            # direction of x is already switched in traceback function.
+            # returned x is increasing towards the center
             if direction == 'both':
                 # calculating orbits backward
                 x_b, y_b, z_b, u_b, v_b, w_b = traceback_stars_radec(
@@ -285,7 +297,7 @@ def mc_sampling_orbits(filepath_or_table, number_of_samples, time_end, time_step
             # setting columns in array with orbit calculations plus reverting x
             # (correct for different standard direction in x in galpy)
             pt_array[0, :, nn] = t
-            pt_array[1, :, nn] = x * (-1)
+            pt_array[1, :, nn] = x
             pt_array[2, :, nn] = y
             pt_array[3, :, nn] = z
             pt_array[4, :, nn] = u
@@ -400,10 +412,311 @@ def mc_sampling_orbits(filepath_or_table, number_of_samples, time_end, time_step
         raise 'sample method must be either "stellar" or "cluster".'
 
     return pt_array
+########################################################################################################################
 
 
 ########################################################################################################################
+def bootstrapping_orbits(filepath_or_table, number_of_samples, time_end, time_step, direction='both',
+                         sample_method='cluster', average_method='mean',
+                         reference_orbit_lsr=True, reference_object_pv=None,
+                         potential=MWPotential2014):
+    """
 
+    :param filepath_or_table: table or path to table
+    :type filepath_or_table: str, pandas.Dataframe, array
+    :param number_of_samples: number of times to sample from the normal distribution
+    :type number_of_samples: int
+    :param time_end: absolut of integration time (to -17 Myr -> 17) given as astropy.units.Quantity with time unit.
+    If not a units.Quantity it is assumed to be in Myr.
+    :type time_end: astropy.units.Quantity, int
+    :param time_step: size of timestep as am astropy.units.Quantity. If not a units.Quantity it is assumed to be in Myr.
+    :type time_step: astropy.units.Quantity, float, int
+    :param direction: 'direction' of integration. Integration 'backward', 'forward' or 'both'. Default is 'both'.
+    :type direction: str
+    :param sample_method: 'cluster' or 'stellar'. 'cluster' averages over the input data and calculates one orbit,
+    statistically sampled, from all stellar orbits. 'stellar' integrates each star's orbit,
+    statistically sampled from measurement and error, as many times as defined in 'number_of_samples'.
+    :type sample_method: str, (default is 'cluster')
+    :param average_method: 'mean' or 'median' if sample_method='cluster'.
+    'mean' draws from a normal distribution of the mean and standard error of all stars,
+    'median' draws from a normal distribution of the median and median absolut deviation of all stars.
+    :type average_method: str, (default is 'mean')
+    :param reference_orbit_lsr: default True, False if LSR is not the reference frame.
+    If False, it is necessary to provide position and velocities of the reference frame in the attribute
+    'reference_object_pv'.
+    :type reference_orbit_lsr: bool
+    :param reference_object_pv: positions and velocities of the reference frame. Default is None.
+    :type reference_object_pv: 1D array or list
+    :param potential: potential in which to integrate the orbit. Choose from galpy.potential and import or define one
+    :type potential: galpy.potential
+
+    :return: returns 3D array with sampled and integrated orbits for each timestep
+    :rtype: numpy.ndarray
+    """
+    # convert data to pandas dataframe
+    data = read_table_to_df(filepath_or_table)
+
+    print(f'Table contains {len(data)} stars that are used to calculate orbits.')
+    print('-' * 100)
+
+    # create time array for integration and time step size for uniform presentation
+    if (isinstance(time_end, unit.Quantity)) & (isinstance(time_step, unit.Quantity)):
+        time_unit = time_end.unit
+        timerange = unit.Quantity(np.linspace(0, time_end.value, int(time_end / time_step) + 1), time_unit)
+    else:
+        time_end = unit.Quantity(time_end, unit.Myr)
+        time_step = unit.Quantity(time_step, unit.Myr)
+        timerange = unit.Quantity(np.linspace(0, time_end.value, int(time_end / time_step) + 1), unit.Myr)
+
+    if direction == 'both':
+        arraylength = len(timerange) * 2 - 1
+    elif (direction == 'backward') | (direction == 'forward'):
+        arraylength = len(timerange) - 1
+    else:
+        raise 'attribute "direction" needs to be one of the following: "backward", "forward", "both".'
+
+    if sample_method == 'cluster':
+        print('... using averaging sample method ("cluster")')
+
+        if average_method == 'mean':
+            print('... using the "mean" and "standard error" as averaging method')
+            # averaging over stellar coordinates and velocities
+            ra, ra_error = np.nanmean(data['ra']), np.nanstd(data['ra'].values) / np.sqrt(len(data))
+            dec, dec_error = np.nanmean(data['dec']), np.nanstd(data['dec'].values) / np.sqrt(len(data))
+            distance, distance_error = np.nanmean(data['distance']), np.nanstd(data['distance'].values) / np.sqrt(
+                len(data))
+            pmra, pmra_error = np.nanmean(data['pmra']), np.nanstd(data['pmra'].values) / np.sqrt(len(data))
+            pmdec, pmdec_error = np.nanmean(data['pmdec']), np.nanstd(data['pmdec'].values) / np.sqrt(len(data))
+            radial_velocity, radial_velocity_error = np.nanmean(data['radial_velocity']), \
+                np.nanstd(data['radial_velocity'].values) / np.sqrt(len(data))
+
+        elif average_method == 'median':
+            print('... using the "median" and "median absolut deviation" as averaging method')
+            # averaging over stellar coordinates and velocities
+            ra, ra_error = np.nanmedian(data['ra']), mad(data['ra'].values)
+            dec, dec_error = np.nanmedian(data['dec']), mad(data['dec'].values)
+            distance, distance_error = np.nanmedian(data['distance']), mad(data['distance'].values)
+            pmra, pmra_error = np.nanmedian(data['pmra']), mad(data['pmra'].values)
+            pmdec, pmdec_error = np.nanmedian(data['pmdec']), mad(data['pmdec'].values)
+            radial_velocity, radial_velocity_error = np.nanmedian(data['radial_velocity']), \
+                mad(data['radial_velocity'].values)
+
+        else:
+            ra, ra_error = 0, 0
+            dec, dec_error = 0, 0
+            distance, distance_error = 0, 0
+            pmra, pmra_error = 0, 0
+            pmdec, pmdec_error = 0, 0
+            radial_velocity, radial_velocity_error = 0, 0
+            raise 'function arg "average_method" is neither set to "mean" or "median".'
+
+        # creating (position-time) array in dimensions of
+        # dim 0: 4 (for t, x, y, z)
+        # dim 1: number of timesteps
+        # dim 2: number of bootstrapping repetitions
+        pt_array = np.zeros((7, arraylength, number_of_samples))
+        print('... Monte Carlo type sampling from standard errors')
+        for nn in range(number_of_samples):
+            n_ra = np.random.normal(ra, ra_error) * unit.deg
+            n_dec = np.random.normal(dec, dec_error) * unit.deg
+            n_dist = np.random.normal(distance, distance_error) * unit.pc
+            n_pmra = np.random.normal(pmra, pmra_error) * unit.mas / unit.yr
+            n_pmdec = np.random.normal(pmdec, pmdec_error) * unit.mas / unit.yr
+            n_vr = np.random.normal(radial_velocity, radial_velocity_error) * unit.km / unit.s
+
+            # direction of x is already switched in traceback function.
+            # returned x is increasing towards the center
+            if direction == 'both':
+                # calculating orbits backward
+                x_b, y_b, z_b, u_b, v_b, w_b = traceback_stars_radec(
+                    sky_object_pv=[n_ra, n_dec, n_dist, n_pmra, n_pmdec, n_vr],
+                    t=timerange,
+                    reference_orbit_lsr=reference_orbit_lsr,
+                    reference_object_pv=reference_object_pv,
+                    back=True,
+                    potential=potential)
+
+                # calculating future orbits
+                x_f, y_f, z_f, u_f, v_f, w_f = traceback_stars_radec(
+                    sky_object_pv=[n_ra, n_dec, n_dist, n_pmra, n_pmdec, n_vr],
+                    t=timerange,
+                    reference_orbit_lsr=reference_orbit_lsr,
+                    reference_object_pv=reference_object_pv,
+                    back=False,
+                    potential=potential)
+
+                # creating one time array by sticking backwards array and future array together
+                # coordinate_b[:0:-1] reverts the order (0,-15) -> (-15, 0) of the backward array
+                # and removes the 0 which is already included in the future array
+                x = np.concatenate((x_b[:0:-1], x_f))
+                y = np.concatenate((y_b[:0:-1], y_f))
+                z = np.concatenate((z_b[:0:-1], z_f))
+                u = np.concatenate((u_b[:0:-1], u_f))
+                v = np.concatenate((v_b[:0:-1], v_f))
+                w = np.concatenate((w_b[:0:-1], w_f))
+
+                t = np.concatenate((timerange[:0:-1] * (-1), timerange))
+
+            elif direction == 'backward':
+                # calculating orbits backward
+                x_b, y_b, z_b, u_b, v_b, w_b = traceback_stars_radec(
+                    sky_object_pv=[n_ra, n_dec, n_dist, n_pmra, n_pmdec, n_vr],
+                    t=timerange,
+                    reference_orbit_lsr=reference_orbit_lsr,
+                    reference_object_pv=reference_object_pv,
+                    back=True,
+                    potential=potential)
+
+                x = x_b[::-1]
+                y = y_b[::-1]
+                z = z_b[::-1]
+                u = u_b[::-1]
+                v = v_b[::-1]
+                w = w_b[::-1]
+
+                t = timerange[::-1] * (-1)
+
+            else:
+                # calculating future orbits
+                x_f, y_f, z_f, u_f, v_f, w_f = traceback_stars_radec(
+                    sky_object_pv=[n_ra, n_dec, n_dist, n_pmra, n_pmdec, n_vr],
+                    t=timerange,
+                    reference_orbit_lsr=reference_orbit_lsr,
+                    reference_object_pv=reference_object_pv,
+                    back=False,
+                    potential=potential)
+
+                x = x_f
+                y = y_f
+                z = z_f
+                u = u_f
+                v = v_f
+                w = w_f
+
+                t = timerange
+
+            # setting columns in array with orbit calculations plus reverting x
+            # (correct for different standard direction in x in galpy)
+            pt_array[0, :, nn] = t
+            pt_array[1, :, nn] = x
+            pt_array[2, :, nn] = y
+            pt_array[3, :, nn] = z
+            pt_array[4, :, nn] = u
+            pt_array[5, :, nn] = v
+            pt_array[6, :, nn] = w
+
+            # if nn % 100 == 0:
+            #     print(nn)
+
+        print('... integrated orbits')
+        print(f'... returning integrated orbits (7x{arraylength}x{number_of_samples} array)')
+
+    elif sample_method == 'stellar':
+        print('... using single stars for traceback')
+        pt_array = np.zeros((7, arraylength, number_of_samples))
+
+        print('... sampling from measurement and measurement uncertainty.')
+        # coordinates as Quantities
+        for star in range(len(data)):
+            for nn in range(number_of_samples):
+
+                n_ra = np.random.normal(data['ra'], data['ra_error']) * unit.deg
+                n_dec = np.random.normal(data['dec'], data['dec_error']) * unit.deg
+                n_dist = np.random.normal(data['distance'], data['distance_error']) * unit.pc
+                n_pmra = np.random.normal(data['pmra'], data['pmra_error']) * unit.mas / unit.yr
+                n_pmdec = np.random.normal(data['pmdec'], data['pmdec_error']) * unit.mas / unit.yr
+                n_vr = np.random.normal(data['radial_velocity'], data['radial_velocity_error']) * unit.km / unit.s
+                if direction == 'both':
+                    # calculating orbits backward
+                    x_b, y_b, z_b, u_b, v_b, w_b = traceback_stars_radec(
+                        sky_object_pv=[n_ra, n_dec, n_dist, n_pmra, n_pmdec, n_vr],
+                        t=timerange,
+                        reference_orbit_lsr=reference_orbit_lsr,
+                        reference_object_pv=reference_object_pv,
+                        back=True,
+                        potential=potential)
+
+                    # calculating future orbits
+                    x_f, y_f, z_f, u_f, v_f, w_f = traceback_stars_radec(
+                        sky_object_pv=[n_ra, n_dec, n_dist, n_pmra, n_pmdec, n_vr],
+                        t=timerange,
+                        reference_orbit_lsr=reference_orbit_lsr,
+                        reference_object_pv=reference_object_pv,
+                        back=False,
+                        potential=potential)
+
+                    # creating one time array by sticking backwards array and future array together
+                    # coordinate_b[:0:-1] reverts the order (0,-15) -> (-15, 0) of the backward array
+                    # and removes the 0 which is already included in the future array
+                    x = np.concatenate((x_b[:0:-1], x_f))
+                    y = np.concatenate((y_b[:0:-1], y_f))
+                    z = np.concatenate((z_b[:0:-1], z_f))
+                    u = np.concatenate((u_b[:0:-1], u_f))
+                    v = np.concatenate((v_b[:0:-1], v_f))
+                    w = np.concatenate((w_b[:0:-1], w_f))
+
+                    t = np.concatenate((timerange[:0:-1] * (-1), timerange))
+
+                elif direction == 'backward':
+                    # calculating orbits backward
+                    x_b, y_b, z_b, u_b, v_b, w_b = traceback_stars_radec(
+                        sky_object_pv=[n_ra, n_dec, n_dist, n_pmra, n_pmdec, n_vr],
+                        t=timerange,
+                        reference_orbit_lsr=reference_orbit_lsr,
+                        reference_object_pv=reference_object_pv,
+                        back=True,
+                        potential=potential)
+
+                    x = x_b[::-1]
+                    y = y_b[::-1]
+                    z = z_b[::-1]
+                    u = u_b[::-1]
+                    v = v_b[::-1]
+                    w = w_b[::-1]
+
+                    t = timerange[::-1] * (-1)
+
+                else:
+                    # calculating future orbits
+                    x_f, y_f, z_f, u_f, v_f, w_f = traceback_stars_radec(
+                        sky_object_pv=[n_ra, n_dec, n_dist, n_pmra, n_pmdec, n_vr],
+                        t=timerange,
+                        reference_orbit_lsr=reference_orbit_lsr,
+                        reference_object_pv=reference_object_pv,
+                        back=False,
+                        potential=potential)
+
+                    x = x_f
+                    y = y_f
+                    z = z_f
+                    u = u_f
+                    v = v_f
+                    w = w_f
+
+                    t = timerange
+
+                # setting columns in array with orbit calculations plus reverting x
+                # (correct for different standard direction in x in galpy)
+                pt_array[0, :, nn] = t
+                pt_array[1, :, nn] = x
+                pt_array[2, :, nn] = y
+                pt_array[3, :, nn] = z
+                pt_array[4, :, nn] = u
+                pt_array[5, :, nn] = v
+                pt_array[6, :, nn] = w
+
+        print('... integrated orbits')
+        print(f'... returning integrated orbits (7x{arraylength}x{number_of_samples} array)')
+
+    else:
+        pt_array = np.zeros((7, arraylength, number_of_samples))
+        raise 'sample method must be either "stellar" or "cluster".'
+
+    return pt_array
+########################################################################################################################
+
+
+########################################################################################################################
 def traceback_stars_radec(sky_object_pv, t, reference_orbit_lsr=True, reference_object_pv=None, back=True,
                           potential=MWPotential2014):
     """
@@ -463,11 +776,11 @@ def traceback_stars_radec(sky_object_pv, t, reference_orbit_lsr=True, reference_
 
     elif (reference_object_pv is not None) & (reference_orbit_lsr is False):
         ra_ro = unit.Quantity(sky_object_pv[0], unit.deg, copy=False)
-        dec_ro = unit.Quantity(sky_object_pv[0], unit.deg, copy=False)
-        distance_ro = unit.Quantity(sky_object_pv[0], unit.deg, copy=False)
-        pmra_ro = unit.Quantity(sky_object_pv[0], unit.deg, copy=False)
-        pmdec_ro = unit.Quantity(sky_object_pv[0], unit.deg, copy=False)
-        radialvelocity_ro = unit.Quantity(sky_object_pv[0], unit.deg, copy=False)
+        dec_ro = unit.Quantity(sky_object_pv[1], unit.deg, copy=False)
+        distance_ro = unit.Quantity(sky_object_pv[2], unit.kpc, copy=False)
+        pmra_ro = unit.Quantity(sky_object_pv[3], unit.mas / unit.yr, copy=False)
+        pmdec_ro = unit.Quantity(sky_object_pv[4], unit.mas / unit.yr, copy=False)
+        radialvelocity_ro = unit.Quantity(sky_object_pv[5], unit.km / unit.s, copy=False)
 
         # custom reference frame
         reference_orbit = Orbit([ra_ro, dec_ro, distance_ro, pmra_ro, pmdec_ro, radialvelocity_ro],
@@ -527,10 +840,10 @@ def traceback_stars_radec(sky_object_pv, t, reference_orbit_lsr=True, reference_
 
     # return coordinates as array in pc
     return x * (-1e3), y * 1e3, z * 1e3, u, v, w
+########################################################################################################################
 
 
 ########################################################################################################################
-
 def traceback_stars_galactic(sky_object_pv: list, t: np.ndarray or list, reference_orbit_lsr=True,
                              reference_object_pv=None, back=True, potential=MWPotential2014):
     """
@@ -648,5 +961,4 @@ def traceback_stars_galactic(sky_object_pv: list, t: np.ndarray or list, referen
 
     # return coordinates as array in pc
     return x * (-1e3), y * 1e3, z * 1e3, u, v, w
-
 ########################################################################################################################
