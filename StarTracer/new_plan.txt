@@ -1,0 +1,18 @@
+
+class cluster:
+    def integrate
+        give class:
+            def mean
+            def median
+            def mad
+            def std
+
+
+
+class stars:
+    def integrate
+        give class:
+            def mean
+            def median
+            def mad
+            def std
