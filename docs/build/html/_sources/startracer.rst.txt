@@ -1,4 +1,4 @@
-.. _startracing:
+.. _startracer:
 
 StarTracer
 =====================

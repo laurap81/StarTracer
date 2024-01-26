@@ -127,7 +127,7 @@ def read_table_to_df(filepath_or_table):
             df = pd.DataFrame(filepath_or_table, columns=column_names)
 
     else:
-        raise 'Data input must be either a path to a table, a pandas DataFrame,' \
+        raise 'ExampleData input must be either a path to a table, a pandas DataFrame,' \
               'or a 2D array with shape being either (Nx12) or (12xN).'
 
     return df

@@ -8,7 +8,7 @@ from astropy.table import Table
 from galpy.orbit import Orbit
 from galpy.potential import MWPotential2014
 
-table = Table.read('../Data/CrAChain_eRV1_stars_MC.csv')
+table = Table.read('../ExampleData/CrAChain_eRV1_stars_MC.csv')
 df = table.to_pandas()
 
 df_cra = df[df['labels'] == 1]

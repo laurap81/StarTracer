@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'StarTracer'
-copyright = '2023, Laura Posch'
+copyright = '2024, Laura Posch'
 author = 'Laura Posch'
 release = '31.01.2024'
 
