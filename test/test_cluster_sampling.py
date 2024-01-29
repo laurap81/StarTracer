@@ -8,7 +8,7 @@ sys.path.append('/Users/laura/Lectures/23WS/OpenSource/StarTracer')
 from StarTracer.startracer import Cluster, SampledCluster
 
 
-test_data = Table.read('/Users/laura/Lectures/23WS/OpenSource/StarTracer/ExampleData/ExampleCluster.fits')
+test_data = Table.read('/Users/laura/Lectures/23WS/OpenSource/StarTracer/example_data/ExampleCluster.fits')
 test_cluster = Cluster(test_data)
 
 

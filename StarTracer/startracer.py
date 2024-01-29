@@ -5,7 +5,6 @@ import astropy.units as unit
 from astropy.table import Table, QTable
 
 import pandas as pd
-import warnings
 import numpy as np
 
 # todo: make test paths relative
@@ -28,7 +27,7 @@ class Cluster:
     :Example:
 
         >>> from astropy.table import Table
-        >>> cluster_data = Table.read('./ExampleData/ExampleCluster.fits')
+        >>> cluster_data = Table.read('./example_data/ExampleCluster.fits')
         >>> cluster = Cluster(cluster_data)
         >>> cluster.data.head()
     """
@@ -84,7 +83,7 @@ class Cluster:
         :Example:
 
             >>> from astropy.table import Table
-            >>> cluster_data = Table.read('./ExampleData/ExampleCluster.fits')
+            >>> cluster_data = Table.read('./example_data/ExampleCluster.fits')
             >>> cluster = Cluster(cluster_data)
             >>> np.shape(cluster.sample_orbit(5, 1, direction='both').get_data())
             >>> np.shape(cluster.sample_orbit(5, 1, direction='backward').get_data())
@@ -774,3 +773,34 @@ def traceback_stars_radec(sky_object_pv, t, reference_orbit_lsr=True, reference_
 
     # return coordinates as array in pc
     return x * (-1e3), y * 1e3, z * 1e3, u, v, w
+
+
+def skycoord_from_table(path_to_file):
+    """
+    create a 6D astropy.coordinates.SkyCoord from the input table
+    (using ra, dec, parallax/ distance, pmra, pmdec, radial velocity).
+    If no column is called 'distance', parallax is automatically converted to distance
+    :param path_to_file: path to table file
+    :type path_to_file: str
+    :return: 6D SkyCoord object based on the data in the table
+    :rtype: astropy.coordinates.SkyCoord
+    """
+    itable = Table.read(path_to_file)
+    column_names = itable.colnames
+
+    if 'distance' in column_names:
+        dist = itable['distance'].value * unit.kpc
+    elif ('distance' not in column_names) & ('parallax' in column_names):
+        dist = Distance(itable['parallax']).to_value(unit.kpc)
+    else:
+        raise 'Table has no column named "distance" or "parallax".'
+
+    skycoord_object = SkyCoord(ra=unit.Quantity(itable['ra'].value * unit.deg, copy=False),
+                               dec=unit.Quantity(itable['dec'].value * unit.deg, copy=False),
+                               distance=unit.Quantity(dist, unit.kpc, copy=False),
+                               pmra=unit.Quantity(itable['pmra'].value * unit.mas / unit.yr, copy=False),
+                               pmdec=unit.Quantity(itable['pmdec'].value * unit.mas / unit.yr, copy=False),
+                               radial_velocity=unit.Quantity(itable['radial_velocity'].value * unit.km / unit.s,
+                                                             copy=False))
+
+    return skycoord_object

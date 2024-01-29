@@ -27,11 +27,11 @@ def make_example_cluster(stars=50, save=False, make_plot=False):
                        'pmra_error': pmra_error, 'pmdec_error': pmdec_error, 'radial_velocity_error': rv_error})
 
     if save:
-        df.to_csv('../ExampleData/ExampleCluster.csv')
+        df.to_csv('../example_data/ExampleCluster.csv')
 
         tbl = Table.from_pandas(df)
-        tbl.write('../ExampleData/ExampleCluster.fits', format='fits', overwrite=True)
-        print('Saved mock cluster as csv and fits at "../ExampleData/ExampleCluster.xxx".')
+        tbl.write('../example_data/ExampleCluster.fits', format='fits', overwrite=True)
+        print('Saved mock cluster as csv and fits at "../example_data/ExampleCluster.xxx".')
 
     if make_plot:
         f = plt.Figure(figsize=(6, 4.5))
@@ -62,7 +62,7 @@ def make_example_cluster(stars=50, save=False, make_plot=False):
         sx4.set_ylabel('number of stars')
 
         f.tight_layout()
-        f.savefig("../ExampleData/ExampleCluster.jpg", dpi=200, format='jpg')
+        f.savefig("../example_data/ExampleCluster.jpg", dpi=200, format='jpg')
         print('Plotting...')
 
 

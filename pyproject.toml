@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr="StarTracer.__version__"}
+
+[project]
+name = "StarTracer"
+dynamic = ["version"]
+authors = [
+    {name="Laura Posch", email="laura.posch@univie.ac.at"},
+]
+description = "A galpy based package to integrate star or cluster orbits statistically, providing uncertainty estimations for the traceback results."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Astronomers",
+]
+dependencies = [
+    "numpy >= 1.26.0",
+    "pandas >= 2.1.0",
+    "galpy >= 1.9.0",
+    "astropy >= 3.5.0",
+    "matplotlib >= 3.8.0"
+]
+
+[project.optional-dependencies]
+build = [
+    "pytest >= 7.5.0",
+    "sphinx >= 5.3.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/laurap81/StarTracer"
+Issues = "https://github.com/laurap81/StarTracer/issues"
