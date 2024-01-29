@@ -1,14 +1,10 @@
 from astropy.table import Table, QTable
 import pandas as pd
 import numpy as np
-import sys
-
-sys.path.append('/Users/laura/Lectures/23WS/OpenSource/StarTracer')
-
 from StarTracer.startracer import Cluster, SampledCluster
 
 
-test_data = Table.read('/Users/laura/Lectures/23WS/OpenSource/StarTracer/example_data/ExampleCluster.fits')
+test_data = Table.read('./StarTracer/example_data/ExampleCluster_1.fits')
 test_cluster = Cluster(test_data)
 
 
