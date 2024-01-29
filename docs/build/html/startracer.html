@@ -11,11 +11,12 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=7e97dd72"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +44,31 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">StarTracer</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">StarTracer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#startracer.Cluster"><code class="docutils literal notranslate"><span class="pre">Cluster</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#startracer.Cluster.sample_orbit"><code class="docutils literal notranslate"><span class="pre">Cluster.sample_orbit()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#startracer.SampledCluster"><code class="docutils literal notranslate"><span class="pre">SampledCluster</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#startracer.SampledCluster.add_mad"><code class="docutils literal notranslate"><span class="pre">SampledCluster.add_mad()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#startracer.SampledCluster.add_mean"><code class="docutils literal notranslate"><span class="pre">SampledCluster.add_mean()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#startracer.SampledCluster.add_median"><code class="docutils literal notranslate"><span class="pre">SampledCluster.add_median()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#startracer.SampledCluster.add_percentile"><code class="docutils literal notranslate"><span class="pre">SampledCluster.add_percentile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#startracer.SampledCluster.add_std"><code class="docutils literal notranslate"><span class="pre">SampledCluster.add_std()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#startracer.SampledCluster.get_data"><code class="docutils literal notranslate"><span class="pre">SampledCluster.get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#startracer.SampledCluster.save_table"><code class="docutils literal notranslate"><span class="pre">SampledCluster.save_table()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#startracer.SampledCluster.to_astropy_table"><code class="docutils literal notranslate"><span class="pre">SampledCluster.to_astropy_table()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#startracer.SampledStars"><code class="docutils literal notranslate"><span class="pre">SampledStars</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#startracer.Stars"><code class="docutils literal notranslate"><span class="pre">Stars</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#startracer.Stars.sample_orbit"><code class="docutils literal notranslate"><span class="pre">Stars.sample_orbit()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#startracer.read_table_to_df"><code class="docutils literal notranslate"><span class="pre">read_table_to_df()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#startracer.traceback_stars_radec"><code class="docutils literal notranslate"><span class="pre">traceback_stars_radec()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -71,10 +96,314 @@
            <div itemprop="articleBody">
              
   <section id="startracer">
-<span id="startracing"></span><h1>StarTracer<a class="headerlink" href="#startracer" title="Link to this heading"></a></h1>
+<span id="id1"></span><h1>StarTracer<a class="headerlink" href="#startracer" title="Permalink to this heading"></a></h1>
 <p>Package to easily get integrated stellar orbits with galpy but using MC sampling or Bootstrapping for a statistically sound output.
 Different input formats and output formats of data possible.</p>
-<span class="target" id="module-startracer"></span></section>
+<span class="target" id="module-startracer"></span><dl class="py class">
+<dt class="sig sig-object py" id="startracer.Cluster">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">startracer.</span></span><span class="sig-name descname"><span class="pre">Cluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.Cluster" title="Permalink to this definition"></a></dt>
+<dd><p>Samples and integrates orbits from the input data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_data</strong> (<em>str</em><em>, </em><em>pandas.DataFrame</em><em>, </em><em>astropy.table.Table</em><em>, </em><em>numpy.ndarray</em>) – input file for stellar cluster members that is read by the <code class="docutils literal notranslate"><span class="pre">read_table_to_df()</span></code> function and
+converted to a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>. If data is provided as a :class:’numpy.ndarray’ dimensions must be
+(12xN) or (Nx12) with the 12 parameters being [‘ra’, ‘ra_error’, ‘dec’, ‘dec_error’, ‘distance’,
+‘distance_error’, ‘pmra’, ‘pmra_error’, ‘pmdec’, ‘pmdec_error’, ‘radial_velocity’, ‘radial_velocity_error’]
+in exactly this order.</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Example<span class="colon">:</span></dt>
+<dd class="field-odd"><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster_data</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;./Data/ExampleCluster.fits&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cluster_data</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="startracer.Cluster.sample_orbit">
+<span class="sig-name descname"><span class="pre">sample_orbit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">time_end,</span> <span class="pre">time_step,</span> <span class="pre">number_of_samples=1000,</span> <span class="pre">direction='both',</span> <span class="pre">average_method='median',</span> <span class="pre">reference_orbit_lsr=True,</span> <span class="pre">reference_object_pv=None,</span> <span class="pre">potential=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential</span> <span class="pre">object&gt;]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.Cluster.sample_orbit" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Resamples orbit integration for a cluster of stars. Bootstraps N-times over the stellar cluster members with</dt><dd><p>replacement. For details see pandas.DataFrame.sample().
+Averages of the positions and velocities of each of the N samples are integrated and collected in a
+3-dimensional numpy.ndarray.
+The shape of the returned array is (7 (parameters) x number of timesteps x number of samples).
+The seven parameters are t, X, Y, Z, U, V, W.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_end</strong> (<em>astropy.units.Quantity</em><em>, </em><em>int</em>) – Absolut of integration time (if -17 Myr -&gt; 17) given as astropy.units.Quantity with time unit.
+If not a units.Quantity it is assumed to be in Myr.</p></li>
+<li><p><strong>time_step</strong> (<em>astropy.units.Quantity</em><em>, </em><em>float</em><em>, </em><em>int</em>) – Size of timestep as am astropy.units.Quantity. If not a units.Quantity it is assumed to be
+in Myr.</p></li>
+<li><p><strong>number_of_samples</strong> (<em>int</em>) – Number of times to bootstrap from cluster members. Defaults to 1000.</p></li>
+<li><p><strong>direction</strong> (<em>str</em>) – ‘direction’ of integration. Integration ‘backward’, ‘forward’ or ‘both’ (default).</p></li>
+<li><p><strong>average_method</strong> (<em>str</em>) – ‘mean’ or ‘median’ (default) Using either mean or median of each parameter
+(ra, dec, plx, pmra, pmdec, v_r) of the resampled selection of stars for integration per draw.</p></li>
+<li><p><strong>reference_orbit_lsr</strong> (<em>bool</em>) – default True, False if LSR is not the reference frame.
+If False, it is necessary to provide position and velocities of the reference frame in the attribute
+‘reference_object_pv’.</p></li>
+<li><p><strong>reference_object_pv</strong> (<em>1D array</em><em> or </em><em>list</em>) – positions and velocities of the reference frame. Default is None.</p></li>
+<li><p><strong>potential</strong> (<em>galpy.potential</em>) – potential in which to integrate the orbit. Choose from galpy.potential and import or define
+a personalised potential</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>returns 3-dimensional numpy.ndarray with bootstrapped and integrated orbits for each timestep
+and parameter (X, Y, Z, U, V, W).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#startracer.SampledCluster" title="startracer.SampledCluster">SampledCluster</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If direction is not among “backward”, “forward”, or “both”.</p></li>
+<li><p><strong>ValueError</strong> – If average_method is neither “mean” nor “median”.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="startracer.SampledCluster">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">startracer.</span></span><span class="sig-name descname"><span class="pre">SampledCluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sampled_orbit_array</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Storing sampled integrated orbits. :class:’SampledOrbits’ stores the results of N sampled orbits</dt><dd><p>(:class:’Cluster.sample_orbits’) as an array.
+Additionally, it provides several methods to summarise the results and store them in a :class:’pandas.DataFrame’.
+This summary DataFrame can also be converted to and returned as an :class:’astropy.table.Table’ or :class:’QTable’,
+as well as saved as a ‘csv’ or ‘fits’ file.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sampled_orbit_array</strong> (<em>numpy.ndarray</em>) – sampled traceback orbits resulting from :class:’Cluster.sample_orbits’.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="startracer.SampledCluster.add_mad">
+<span class="sig-name descname"><span class="pre">add_mad</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster.add_mad" title="Permalink to this definition"></a></dt>
+<dd><p>Add median absolut deviation of sampled orbits to summary DataFrame</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="startracer.SampledCluster.add_mean">
+<span class="sig-name descname"><span class="pre">add_mean</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster.add_mean" title="Permalink to this definition"></a></dt>
+<dd><p>Add mean of sampled orbits to summary DataFrame</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="startracer.SampledCluster.add_median">
+<span class="sig-name descname"><span class="pre">add_median</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster.add_median" title="Permalink to this definition"></a></dt>
+<dd><p>Add median of sampled orbits to summary DataFrame</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="startracer.SampledCluster.add_percentile">
+<span class="sig-name descname"><span class="pre">add_percentile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">percentile</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster.add_percentile" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Add percentiles of sampled orbits to summary DataFrame. Computes the percentile of the sampled orbits along</dt><dd><p>the second dimension. Saves the values for each parameter per timestep with the
+percentile-percentage in the column name. If there are several percentages given, each is computed and returned
+for all parameters. E.g. (prctl1, prctl2) -&gt; adds 12 column to the DataFrame (6 for prctl1 + 6 for prctl2).</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>percentile</strong> (<em>array-like</em>) – percentage(s) to compute percentile of.
+Needs to be between 0 and 100 (for details see numpy.percentile.) Single float or sequence of float.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="startracer.SampledCluster.add_std">
+<span class="sig-name descname"><span class="pre">add_std</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster.add_std" title="Permalink to this definition"></a></dt>
+<dd><p>Add standard deviation of sampled orbits to summary DataFrame</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="startracer.SampledCluster.get_data">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster.get_data" title="Permalink to this definition"></a></dt>
+<dd><p>Get array with sampled orbits</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns sampled traceback results from :class:’Cluster.sample_orbits’ as an array.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="startracer.SampledCluster.save_table">
+<span class="sig-name descname"><span class="pre">save_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'csv'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster.save_table" title="Permalink to this definition"></a></dt>
+<dd><p>Save DataFrame to “csv” or “fits” file. Existing files will be overwritten.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> (<em>str</em>) – filename including the path to file location</p></li>
+<li><p><strong>file_type</strong> (<em>str</em>) – ‘csv’ (default) or ‘fits’ file. If ‘fits’ is chosen,
+DataFrame is first converted to :class:’astropy.table.Table’ in order to then write the data to fits file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If file_type not ‘csv’ or ‘fits’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="startracer.SampledCluster.to_astropy_table">
+<span class="sig-name descname"><span class="pre">to_astropy_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster.to_astropy_table" title="Permalink to this definition"></a></dt>
+<dd><p>Convert DataFrame to astropy.table.Table or QTable. Returns an :class:’astropy.table.Table’ or optional as
+:class:’astropy.table.QTable’ that includes units for each column.
+[t] is assumed to be Myr, coordinates are given in pc and velocities in km/s.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>include_units</strong> (<em>bool</em>) – Default is False. If True, DataFrame is converted to a QTable that can store
+Quantities with unit information.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>astropy table, optionally with units</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>astropy.table.Table or astropy.table.QTable</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="startracer.SampledStars">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">startracer.</span></span><span class="sig-name descname"><span class="pre">SampledStars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sampled_orbit_array</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledStars" title="Permalink to this definition"></a></dt>
+<dd><p>here is the sampled stars doc missing</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="startracer.Stars">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">startracer.</span></span><span class="sig-name descname"><span class="pre">Stars</span></span><a class="headerlink" href="#startracer.Stars" title="Permalink to this definition"></a></dt>
+<dd><p>Here is the stars class doc missing</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="startracer.Stars.sample_orbit">
+<span class="sig-name descname"><span class="pre">sample_orbit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">time_end,</span> <span class="pre">time_step,</span> <span class="pre">number_of_samples=1000,</span> <span class="pre">direction='both',</span> <span class="pre">reference_orbit_lsr=True,</span> <span class="pre">reference_object_pv=None,</span> <span class="pre">potential=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential</span> <span class="pre">object&gt;]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.Stars.sample_orbit" title="Permalink to this definition"></a></dt>
+<dd><p>(Re)sampled Orbit integration of a cluster of stars or individual stars</p>
+<p>Draws N-times from a normal distribution with mean and standard deviation based on the measurement
+and the measurement uncertainty. Returns an array containing all sampled orbits per timestep for each star.
+The shape of the returned array is (number of stars x 7 (parameters) x number of timesteps x number of samples).
+The seven returned parameters are t, X, Y, Z, U, V, W.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>number_of_samples</strong> – number of times to bootstrap (cluster)</p>
+</dd>
+</dl>
+<p>or sample from the normal distribution (single star)
+:type number_of_samples: int
+:param time_end: absolut of integration time (if -17 Myr -&gt; 17) given as astropy.units.Quantity with time unit.
+If not a units.Quantity it is assumed to be in Myr.
+:type time_end: astropy.units.Quantity, int
+:param time_step: size of timestep as am astropy.units.Quantity. If not a units.Quantity the value
+is assumed to be in Myr.
+:type time_step: astropy.units.Quantity, float, int
+:param direction: ‘direction’ of integration. Integration ‘backward’, ‘forward’ or ‘both’ (default).
+:type direction: str
+:param reference_orbit_lsr: default True, False if LSR is not the reference frame.
+If False, it is necessary to provide position and velocities of the reference frame in the attribute
+‘reference_object_pv’.
+:type reference_orbit_lsr: bool
+:param reference_object_pv: positions and velocities of the reference frame. Default is None.
+:type reference_object_pv: 1D array or list
+:param potential: potential in which to integrate the orbit. Choose from galpy.potential and import or define
+a personalised potential
+:type potential: galpy.potential</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>returns 3- or 4-dimensional array with bootstrapped or sampled and integrated orbits for each timestep</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#startracer.SampledStars" title="startracer.SampledStars">SampledStars</a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If direction is not among “backward”, “forward”, or “both”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="startracer.read_table_to_df">
+<span class="sig-prename descclassname"><span class="pre">startracer.</span></span><span class="sig-name descname"><span class="pre">read_table_to_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath_or_table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.read_table_to_df" title="Permalink to this definition"></a></dt>
+<dd><p>Reading in a table and/or converting the input to a :class:’pandas.DataFrame’, if it is not already.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filepath_or_table</strong> (<em>str</em><em>, </em><em>np.ndarray</em><em>, </em><em>pd.DataFrame</em><em>, </em><em>astropy.table.Table</em>) – path to saved file, or table/ array. All versions need headers including
+[‘ra’, ‘ra_error’, ‘dec’, ‘dec_error’, ‘distance’, ‘distance_error’, ‘pmra’, ‘pmra_error’, ‘pmdec’, ‘pmdec_error’,
+‘radial_velocity’, ‘radial_velocity_error’].
+If input is an array, this order must be kept for the 12 columns/ rows.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame of input</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>TypeError</strong> – if input is neither a str, pandas.DataFrame, astropy.table.Table, or numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="startracer.traceback_stars_radec">
+<span class="sig-prename descclassname"><span class="pre">startracer.</span></span><span class="sig-name descname"><span class="pre">traceback_stars_radec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">sky_object_pv,</span> <span class="pre">t,</span> <span class="pre">reference_orbit_lsr=True,</span> <span class="pre">reference_object_pv=None,</span> <span class="pre">back=True,</span> <span class="pre">potential=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential</span> <span class="pre">object&gt;]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.traceback_stars_radec" title="Permalink to this definition"></a></dt>
+<dd><p>integrates coordinates and velocities relative to a reference frame</p>
+<p>Calculate the traceback of one or more “sky objects” initialised by heliocentric equatorial coordinates
+(as published by <em>GAIA</em>). Output is in Cartesian coordinates with the center of the coordinate system being the
+reference frame given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sky_object_pv</strong> (<em>list</em><em>[</em><em>int</em><em>, </em><em>float</em><em>, </em><em>Quantity</em><em>]</em>) – position and velocity of traceable object(s), in the form
+[ra, dec, distance, pmra, pmdec, radial velocity]. Single values or array of values for each coordinate.
+Can but do not have to be astropy.units.Quantity.</p></li>
+<li><p><strong>t</strong> (<em>astropy.units.Quantity</em>) – time value(s) at which to evaluate the orbit (0 to t_n)</p></li>
+<li><p><strong>reference_orbit_lsr</strong> (<em>bool</em>) – default <em>True</em> for LSR as reference frame
+(X, Y, Z) = (0, 0, 0) pc and (U, V, W) = (-11.1, -12.24, -7.25) km/s.
+If <em>False</em>, [ra, dec, distance, pmra, pmdec, vr] needs to be passed to the reference_object_pv parameter</p></li>
+<li><p><strong>reference_object_pv</strong> (<em>list</em>) – position and velocity of reference object if reference_orbit is <em>False</em></p></li>
+<li><p><strong>back</strong> (<em>bool</em>) – default <em>True</em>, integrates backward in time (flips time sequence and velocities).
+If back is <em>False</em> integrates forward in time.</p></li>
+<li><p><strong>potential</strong> (<em>galpy.potential</em>) – default MWPotential2014, any other galpy potential can be passed
+(<a class="reference external" href="https://docs.galpy.org/en/latest/potential.html">https://docs.galpy.org/en/latest/potential.html</a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>x (increasing towards galactic center), y, z in pc and u, v, w in km/s.
+For each coordinate an array is returned with shape (len(t), len(sky_object_pv[any]):
+for each timestep and sky object integrated positions and velocities are returned.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float, array</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If “reference_orbit_lsr” is set to False but no values passed to “reference_object_pv”.</p></li>
+<li><p><strong>ValueError</strong> – If “reference_orbit_lsr” neither True nor False.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 
 
            </div>

@@ -9,7 +9,7 @@ import pandas as pd
 import warnings
 import numpy as np
 
-path_to_table = '../Data/CrAChain_eRV1_stars_MC.csv'
+path_to_table = 'example_data/CrAChain_eRV1_stars_MC.csv'
 
 itable = Table.read(path_to_table)
 df = itable.to_pandas()
