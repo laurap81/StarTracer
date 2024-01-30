@@ -1,13 +1,13 @@
 [![codecov](https://codecov.io/gh/laurap81/StarTracer/graph/badge.svg?token=ZHUR8G0A3Z)](https://codecov.io/gh/laurap81/StarTracer)
 
 ```
-    .                                        .   --   .                                       .
-    .                                    .                .                                   .
-    .                                  .                    .                                 .
-    *                                 .      StarTracer      .                                *
-    .                                 .                      .                                .
-    .                                  +                    .                                 .
-    .                                                     *                                   .
+.                                        .   --   .                                       .
+.                                    .                .                                   .
+.                                  .                    .                                 .
+*                                 .      StarTracer      .                                *
+.                                 .                      .                                .
+.                                  +                    .                                 .
+.                                                     *                                   .
 ```
 
 
