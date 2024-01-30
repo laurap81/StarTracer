@@ -3,12 +3,11 @@ import pandas as pd
 import numpy as np
 from StarTracer.startracer import Cluster, SampledCluster
 
-
 test_data = Table.read('./StarTracer/example_data/ExampleCluster_1.fits')
 test_cluster = Cluster(test_data)
 
 
-def test_cluster_dtype():
+def test_cluster_type():
     assert isinstance(test_cluster.data, pd.DataFrame)
 
 
@@ -32,7 +31,41 @@ def test_sampled_cluster_shape_backward():
     time_step = 0.1
     number_of_samples = 100
     sampled_cluster_orbits = test_cluster.sample_orbit(time_end=time_end, time_step=time_step,
-                                                       number_of_samples=number_of_samples, direction='backward')
+                                                       number_of_samples=number_of_samples, direction='backward',
+                                                       print_out=True)
+
+    sampled_cluster_shape = np.shape(sampled_cluster_orbits.get_data())
+    dim_0 = 7
+    dim_1 = int(time_end / time_step) + 1
+    dim_2 = number_of_samples
+
+    assert sampled_cluster_shape == (dim_0, dim_1, dim_2)
+
+
+def test_reference_orbit():
+    time_end = 5
+    time_step = 0.1
+    number_of_samples = 100
+    sampled_stars_orbits = test_cluster.sample_orbit(time_end=time_end, time_step=time_step,
+                                                     number_of_samples=number_of_samples, direction='forward',
+                                                     reference_orbit_lsr=False,
+                                                     reference_object_pv=[0, 0, 0, 1, 1, 1])
+
+    sampled_stars_shape = np.shape(sampled_stars_orbits.get_data())
+    dim_0 = 7
+    dim_1 = int(time_end / time_step) + 1
+    dim_2 = number_of_samples
+
+    assert sampled_stars_shape == (dim_0, dim_1, dim_2)
+
+
+def test_average_method():
+    time_end = 5
+    time_step = 0.1
+    number_of_samples = 100
+    sampled_cluster_orbits = test_cluster.sample_orbit(time_end=time_end, time_step=time_step,
+                                                       number_of_samples=number_of_samples, direction='forward',
+                                                       average_method='mean')
 
     sampled_cluster_shape = np.shape(sampled_cluster_orbits.get_data())
     dim_0 = 7
@@ -164,4 +197,3 @@ def test_table():
     table = sampled_cluster.to_astropy_table(include_units=False)
     table_columns = len(table.columns)
     assert (isinstance(table, Table)) & (table_columns > 1)
-

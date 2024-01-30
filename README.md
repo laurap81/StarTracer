@@ -30,15 +30,15 @@ Each method comes with different statistical sampling methods to estimate uncert
 
 - For cluster orbit integration:
   - bootstrapping over the cluster members for an average cluster orbit integration
-  - [ ] _to be implemented_: sampling from a fit to the 6D cluster distribution
   - methods to facilitate the calculation of averages and uncertainty estimation
+  - [ ] _to be implemented_: sampling from a fit to the 6D cluster distribution
 
 - For stellar orbit integration:
   - Monte Carlo-type sampling from a normal distribution based on measurement and measurement uncertainties
   - again, methods to facilitate the calculation of averages and uncertainty estimation
 
-- For representation:
-  - Functions to visualise the resulting data (quick-check)
+- For visualisation:
+  - [ ] _to be implemented_: functions to visualise the resulting data (quick-check)
 
 
 This is a versioned import package that can be installed locally. This project is partly still under construction and
@@ -48,7 +48,7 @@ will be updated accordingly.
 
 ## Installation
 
-This package can be installed by cloning it and running
+This package can be installed locally by cloning the repository and running
 
 ```
 python3 -m pip install
@@ -124,5 +124,7 @@ Index(['t', 'X_median', 'Y_median', 'Z_median', 'U_median', 'V_median', 'W_media
 ```
 
 This works similarly for the `Stars` class that allows for orbit sampling from a normal distribution based on
-measurement value and uncertainty.
+measurement value and uncertainty. However, the resulting array is 4-dimensional and after applying the methods to get
+the orbit averages and uncertainties for each star, we are still left with 3 dimensions.
+It cannot be stored to a output file yet.
 
