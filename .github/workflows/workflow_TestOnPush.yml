@@ -25,5 +25,7 @@ jobs:
       run: coverage run -m pytest
     - name: Upload coverage report to Codecov
       uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 #    - name: Update readme
 #      run: jupyter nbconvert --template "pythoncodeblocks.tpl" --to markdown README.ipynb
