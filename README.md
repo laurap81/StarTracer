@@ -1,24 +1,28 @@
 [![codecov](https://codecov.io/gh/laurap81/StarTracer/graph/badge.svg?token=ZHUR8G0A3Z)](https://codecov.io/gh/laurap81/StarTracer)
 
+# StarTracer
 ```
-.                                        .   --   .                                       .
-.                                    .                .                                   .
-.                                  .                    .                                 .
-*                                 .      StarTracer      .                                *
-.                                 .                      .                                .
-.                                  +                    .                                 .
-.                                                     *                                   .
+  .                                        .   --   .                                       .
+  .                                    .                .                                   .
+  .                                  .                    .                                 .
+  *                                 .      StarTracer      .                                *
+  .                                 .                      .                                .
+  .                                  +                    .                                 .
+  .                                                     *                                   .
 ```
 
 
-**StarTracer** is a library that allows to integrate star and cluster orbits with statistical sampling methods in order
-to obtain an uncertainty estimation of the traceback result. It is mainly based on
+**StarTracer** is a python package that allows to integrate star and cluster orbits with statistical sampling methods
+in order to obtain an uncertainty estimation of the traceback result. It is mainly based on
 [galpy](https://docs.galpy.org/en/v1.9.1/) which is an [astropy](https://www.astropy.org/index.html)
-[affiliated packages](https://www.astropy.org/affiliated/). StarTracer is also based on astropy,
-utilising the Table, SkyCoord, and Quantity classes.
+[affiliated package](https://www.astropy.org/affiliated/). StarTracer is also based on astropy,
+utilising the [Table](https://docs.astropy.org/en/stable/api/astropy.table.Table.html),
+[SkyCoord](https://docs.astropy.org/en/stable/api/astropy.coordinates.SkyCoord.html),
+and [Quantity](https://docs.astropy.org/en/stable/units/quantity.html) classes.
 
+<br/>
 
-### Features
+## Features
 
 The code offers two features: (i) integrating a cluster orbits, which is based on the average position and motion of
 its cluster members and (ii) integrating orbits for individual stars (independent of cluster membership). 
@@ -26,7 +30,7 @@ Each method comes with different statistical sampling methods to estimate uncert
 
 - For cluster orbit integration:
   - bootstrapping over the cluster members for an average cluster orbit integration
-  - [] to be implemented: sampling from a fit to the 6D cluster distribution
+  - [ ] _to be implemented_: sampling from a fit to the 6D cluster distribution
   - methods to facilitate the calculation of averages and uncertainty estimation
 
 - For stellar orbit integration:
@@ -40,10 +44,11 @@ Each method comes with different statistical sampling methods to estimate uncert
 This is a versioned import package that can be installed locally. This project is partly still under construction and
 will be updated accordingly.
 
-### Installation
+<br/>
+
+## Installation
 
 This package can be installed by cloning it and running
-
 
 ```
 python3 -m pip install
@@ -51,8 +56,9 @@ python3 -m pip install
 
 from the top level directory, after which you can import the library to your code.
 
+<br/><br/>
 
-### How to use StarTracer
+## How to use StarTracer
 
 More examples can be found on the ReadTheDocs page of this project.
 [!note: insert link]
