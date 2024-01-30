@@ -50,6 +50,21 @@ def test_get_sampled_data():
     assert isinstance(sampled_cluster.get_data(), np.ndarray)
 
 
+def test_add_multiple():
+    time_end = 5
+    time_step = 0.1
+    sampled_cluster = test_cluster.sample_orbit(time_end, time_step)
+    sampled_cluster.add_mean()
+    summary_df_before = len(sampled_cluster.summary_dataframe.columns)
+
+    sampled_cluster.add_std()
+    summary_df_after = len(sampled_cluster.summary_dataframe.columns)
+
+    assert ((summary_df_after - summary_df_before) == 6) & \
+           ('X_mean' in sampled_cluster.summary_dataframe.columns) & \
+           ('X_std' in sampled_cluster.summary_dataframe.columns)
+
+
 def test_mean_added():
     time_end = 5
     time_step = 0.1

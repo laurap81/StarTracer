@@ -3,14 +3,27 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+
+.. code-block::
+
+    .                                        .   --   .                                       .
+    .                                    .                .                                   .
+    .                                  .                    .                                 .
+    *                                 .      StarTracer      .                                *
+    .                                 .                      .                                .
+    .                                  +                    .                                 .
+    .                                                     *                                   .
+
+
 Welcome to StarTracer's documentation!
 ======================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    startracer.rst
+
 
 Indices and tables
 ==================

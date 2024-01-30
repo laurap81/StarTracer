@@ -8,7 +8,9 @@ from astropy.table import Table, QTable
 import pandas as pd
 import numpy as np
 
-# todo: make test paths relative
+# todo: mc type sampling for distance from parallax conversion
+# todo: include this in the documentation
+
 # todo: fix single star sampling
 # todo: if time left, include plot function
 
@@ -109,9 +111,12 @@ class Cluster:
             >>> from astropy.table import Table
             >>> cluster_data = Table.read('./example_data/ExampleCluster_1.fits')
             >>> cluster = Cluster(cluster_data)
-            >>> np.shape(cluster.sample_orbit(5, 1, number_of_samples=1000, direction='both').get_data())
+
+            >>> data_cluster_both = cluster.sample_orbit(5, 1, number_of_samples=1000, direction='both').get_data()
+            >>> np.shape(data_cluster_both)
             (7, 11, 1000)
-            >>> np.shape(cluster.sample_orbit(5, 1, direction='backward').get_data())
+            >>> data_cluster_back = cluster.sample_orbit(5, 1, direction='backward').get_data()
+            >>> np.shape(data_cluster_back)
             (7, 6, 1000)
         """
 
@@ -165,7 +170,7 @@ class Cluster:
         n_pmdec = np.zeros((number_of_samples,)) * unit.mas / unit.yr
         n_vr = np.zeros((number_of_samples,)) * unit.km / unit.s
 
-        for smpl in range(number_of_samples):
+        for smpl in range(int(number_of_samples)):
 
             sampled_data = data.sample(n=number_of_stars, replace=True)
 
@@ -312,11 +317,47 @@ class SampledCluster:
 
         :return: Returns sampled traceback results from ``Cluster.sample_orbits`` as an array.
         :rtype: np.ndarray
+
+        Examples
+        ========
+
+        .. code-block::
+
+            >>> from astropy.table import Table
+            >>> cluster_data = Table.read('./example_data/ExampleCluster_1.fits')
+            >>> cluster = Cluster(cluster_data).sample_orbit(5, 1)
+
+            >>> cluster_sampled_data = cluster.get_data()
+            >>> type(cluster_sampled_data)
+            <class 'numpy.ndarray'>
+            >>> np.shape(cluster_sampled_data)
+            (7, 11, 1000)
         """
         return self.__data.copy()
 
     def add_mean(self):
         """Add mean of sampled orbits to summary DataFrame
+
+        Examples
+        ========
+
+        .. code-block::
+
+            >>> from astropy.table import Table
+            >>> cluster_data = Table.read('./example_data/ExampleCluster_1.fits')
+            >>> cluster = Cluster(cluster_data).sample_orbit(5, 1)
+
+            >>> cluster.add_mean()
+            >>> cluster.summary_dataframe.columns
+            Index(['t', 'X_mean', 'Y_mean', 'Z_mean', 'U_mean', 'V_mean', 'W_mean'], dtype='object')
+            >>> cluster.summary_dataframe.loc[:5, 't']
+            0   -5.0
+            1   -4.0
+            2   -3.0
+            3   -2.0
+            4   -1.0
+            5    0.0
+            Name: t, dtype: float64
         """
         self.summary_dataframe[['X_mean', 'Y_mean', 'Z_mean', 'U_mean', 'V_mean', 'W_mean']] = np.transpose(
             np.nanmean(self.__data[1:, :, :], axis=2))
@@ -329,6 +370,23 @@ class SampledCluster:
 
     def add_mad(self):
         """Add median absolut deviation of sampled orbits to summary DataFrame
+
+        Examples
+        ========
+
+        .. code-block::
+
+            >>> from astropy.table import Table
+            >>> cluster_data = Table.read('./example_data/ExampleCluster_1.fits')
+            >>> cluster = Cluster(cluster_data).sample_orbit(5, 1)
+
+            >>> cluster.add_median()
+            >>> cluster.summary_dataframe.columns
+            Index(['t', 'X_median', 'Y_median', 'Z_median', 'U_median', 'V_median', 'W_median'], dtype='object')
+            >>> cluster.add_mad()
+            >>> cluster.summary_dataframe.columns
+            Index(['t', 'X_median', 'Y_median', 'Z_median', 'U_median', 'V_median', 'W_median',
+                   'X_mad', 'Y_mad', 'Z_mad', 'U_mad', 'V_mad', 'W_mad'], dtype='object')
         """
         median_absolut_deviation = np.nanmedian(np.abs(np.subtract(
             self.__data[1:, :, :], np.nanmean(self.__data[1:, :, :], axis=2)[:, :, None])), axis=2)
@@ -344,8 +402,9 @@ class SampledCluster:
     def add_percentile(self, percentile):
         """Add percentiles of sampled orbits to summary DataFrame. Computes the percentile of the sampled orbits along
             the second dimension. Saves the values for each parameter per timestep with the
-            percentile-percentage in the column name. If there are several percentages given, each is computed and returned
-            for all parameters. E.g. (prctl1, prctl2) -> adds 12 column to the DataFrame (6 for prctl1 + 6 for prctl2).
+            percentile-percentage in the column name. If there are several percentages given, each is computed and
+            returned for all parameters.
+            E.g. (prctl1, prctl2) -> adds 12 column to the DataFrame (6 for prctl1 + 6 for prctl2).
 
         :param percentile: percentage(s) to compute percentile of.
             Needs to be between 0 and 100 (for details see numpy.percentile.) Single float or sequence of float.
@@ -682,8 +741,8 @@ def traceback_stars_radec(sky_object_pv, t, reference_orbit_lsr=True, reference_
     """ integrates coordinates and velocities relative to a reference frame
 
     Calculate the traceback of one or more "sky objects" initialised by heliocentric equatorial coordinates
-        (as published by *GAIA*). Output is in Cartesian coordinates with the center of the coordinate system being the
-        reference frame given.
+    (as published by *GAIA*). Output is in Cartesian coordinates with the center of the coordinate system being the
+    reference frame given.
 
     :param sky_object_pv: position and velocity of traceable object(s), in the form
         [ra, dec, distance, pmra, pmdec, radial velocity]. Single values or array of values for each coordinate.
@@ -806,14 +865,20 @@ def traceback_stars_radec(sky_object_pv, t, reference_orbit_lsr=True, reference_
 
 
 def skycoord_from_table(path_to_file):
-    """
-    create a 6D astropy.coordinates.SkyCoord from the input table
-    (using ra, dec, parallax/ distance, pmra, pmdec, radial velocity).
-    If no column is called 'distance', parallax is automatically converted to distance
+    """ SkyCoord from table data
+
+    Function to create a 6D astropy.coordinates.SkyCoord from the input table
+    (using ra, dec, parallax/ distance, pmra, pmdec, radial velocity). If no column is called 'distance',
+    parallax is automatically converted to distance by Monte Carlo-type sampling from the measurement and measurement
+    uncertainty of the parallax.
+
     :param path_to_file: path to table file
     :type path_to_file: str
+
     :return: 6D SkyCoord object based on the data in the table
     :rtype: astropy.coordinates.SkyCoord
+
+    :raises: KeyError: If the table has no column named 'distance' or 'parallax'.
     """
     itable = Table.read(path_to_file)
     column_names = itable.colnames
@@ -823,7 +888,7 @@ def skycoord_from_table(path_to_file):
     elif ('distance' not in column_names) & ('parallax' in column_names):
         dist = Distance(itable['parallax']).to_value(unit.kpc)
     else:
-        raise 'Table has no column named "distance" or "parallax".'
+        raise KeyError('Table has no column named "distance" or "parallax".')
 
     skycoord_object = SkyCoord(ra=unit.Quantity(itable['ra'].value * unit.deg, copy=False),
                                dec=unit.Quantity(itable['dec'].value * unit.deg, copy=False),
