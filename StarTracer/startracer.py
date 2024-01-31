@@ -706,9 +706,19 @@ class Stars:
 
 class SampledStars:
     """Storing sampled integrated orbits. SampledStars stores the results of N sampled orbits
-    (:meth:`Stars.sample_orbits`) as an array. Additionally, it provides several methods to summarise the results
-    per star and store them in a :class:`numpy.ndarray`. This summary array can also be converted to and returned as an
-    :class:`astropy.table.Table` or :class:`QTable`.
+    (:meth:`Stars.sample_orbits`) as an array. The shape of the stored array is
+    (number of stars x 7 (parameters) x number of timesteps x number of samples). Index for the parameters is
+    0: t, 1: X, 2: Y, 3: Z, 4: U, 5: V, 6: W.
+    Additionally, it provides several methods to summarise the results per star and store them in a
+    :class:`numpy.ndarray`. The methods collapse the integrated orbit array along axis 3.
+
+    To access the e.g. median values of X (index 1) for each star and all timesteps use
+
+    .. code-block::
+        >>> stars = Stars('./example_data/ExampleCluster_1.fits')
+        >>> variable_name = SampledStars.calculate_median()
+        >>> for star in range(len(Stars(cluster_table).data.index)):
+        >>>    single_star_variable = variable_name[star, 1, ]
 
     :param sampled_orbit_array: sampled traceback orbits resulting from :meth:`Stars.sample_orbits`.
     :type sampled_orbit_array: numpy.ndarray
@@ -734,7 +744,7 @@ class SampledStars:
     def calculate_mean(self):
         """Calculates the mean of sampled orbits per star
 
-        :return: Returns array with mean values for each star and timestep in axis 2.
+        :return: Returns array with mean values for each star and timestep that are stored in axis 2.
         :type: numpy.ndarray
         """
         self.mean_array = np.nanmean(self.__data, axis=3)
@@ -743,7 +753,7 @@ class SampledStars:
     def calculate_median(self):
         """Calculates the median of sampled orbits per star
 
-        :return: Returns array with median values for each star and timestep in axis 2.
+        :return: Returns array with median values for each star and timestep that are stored in axis 2.
         :type: numpy.ndarray
         """
         self.median_array = np.nanmedian(self.__data, axis=3)
@@ -752,7 +762,8 @@ class SampledStars:
     def calculate_mad(self):
         """Calculates the median absolut deviation of sampled orbits per star
 
-        :return: Returns array with median absolut deviation values for each star and timestep in axis 2.
+        :return: Returns array with median absolut deviation values for each star and timestep that are stored
+            in axis 2.
         :type: numpy.ndarray
         """
         median_absolut_deviation = np.nanmedian(np.abs(np.subtract(
@@ -763,7 +774,7 @@ class SampledStars:
     def calculate_std(self):
         """Calculates the standard deviation of sampled orbits per star
 
-        :return: Returns array with standard deviation values for each star and timestep in axis 2.
+        :return: Returns array with standard deviation values for each star and timestep that are stored in axis 2.
         :type: numpy.ndarray
         """
         self.std_array = np.nanstd(self.__data, axis=3)
