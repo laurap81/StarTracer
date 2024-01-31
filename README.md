@@ -1,5 +1,6 @@
 [![codecov](https://codecov.io/gh/laurap81/StarTracer/graph/badge.svg?token=ZHUR8G0A3Z)](https://codecov.io/gh/laurap81/StarTracer)
 
+
 # StarTracer
 ```
   .                                        .   --   .                                       .
@@ -44,9 +45,6 @@ Regarding the orbital integration, the code allows for customisation of the refe
   - [ ] _to be implemented_: functions to visualise the resulting data (quick-check)
 
 
-This is a versioned import package that can be installed locally. This project is partly still under construction and
-will be updated accordingly.
-
 <br/>
 
 ## Installation
@@ -58,13 +56,15 @@ python3 -m pip install
 ```
 
 from the top level directory, after which you can import the library to your code.
+This is a versioned import package that can be installed locally. This project is partly still under construction and
+will be updated accordingly.
 
 <br/><br/>
 
 ## How to use StarTracer
 
-More examples can be found on the ReadTheDocs page of this project. [!note: insert link]
-Also, some example code can be found in the **StarTracer directory**.
+More examples can be found on the [ReadTheDocs](https://startracer.readthedocs.io/en/latest/startracer.html)
+page for this project. Also, some example code can be found in the **StarTracer directory**.
 
 #### For cluster orbit integration:
 
