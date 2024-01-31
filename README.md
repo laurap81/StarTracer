@@ -52,7 +52,7 @@ Regarding the orbital integration, the code allows for customisation of the refe
 This package can be installed locally by cloning the repository and running
 
 ```
-python3 -m pip install
+python3 -m pip install .
 ```
 
 from the top level directory, after which you can import the library to your code.
