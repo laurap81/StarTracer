@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from StarTracer.startracer import Stars, SampledStars
 
-filepath = '../StarTracer/example_data/ExampleCluster_1.fits'
+filepath = './StarTracer/example_data/ExampleCluster_1.fits'
 test_data = Table.read(filepath)
 test_data_df = test_data.to_pandas()
 test_stars = Stars(test_data)
