@@ -189,9 +189,12 @@ is set to ‘both’, the resulting array has twice the
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cluster_data</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;./example_data/ExampleCluster_1.fits&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span> <span class="o">=</span> <span class="n">Cluster</span><span class="p">(</span><span class="n">cluster_data</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">sample_orbit</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">number_of_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_cluster_both</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sample_orbit</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">number_of_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">data_cluster_both</span><span class="p">)</span>
 <span class="go">(7, 11, 1000)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">sample_orbit</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;backward&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_cluster_back</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sample_orbit</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;backward&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">data_cluster_back</span><span class="p">)</span>
 <span class="go">(7, 6, 1000)</span>
 </pre></div>
 </div>
@@ -215,12 +218,44 @@ store them in a <code class="xref py py-class docutils literal notranslate"><spa
 <dt class="sig sig-object py" id="startracer.SampledCluster.add_mad">
 <span class="sig-name descname"><span class="pre">add_mad</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster.add_mad" title="Permalink to this definition"></a></dt>
 <dd><p>Add median absolut deviation of sampled orbits to summary DataFrame</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster_data</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;./example_data/ExampleCluster_1.fits&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span> <span class="o">=</span> <span class="n">Cluster</span><span class="p">(</span><span class="n">cluster_data</span><span class="p">)</span><span class="o">.</span><span class="n">sample_orbit</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">add_median</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">summary_dataframe</span><span class="o">.</span><span class="n">columns</span>
+<span class="go">Index([&#39;t&#39;, &#39;X_median&#39;, &#39;Y_median&#39;, &#39;Z_median&#39;, &#39;U_median&#39;, &#39;V_median&#39;, &#39;W_median&#39;], dtype=&#39;object&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">add_mad</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">summary_dataframe</span><span class="o">.</span><span class="n">columns</span>
+<span class="go">Index([&#39;t&#39;, &#39;X_median&#39;, &#39;Y_median&#39;, &#39;Z_median&#39;, &#39;U_median&#39;, &#39;V_median&#39;, &#39;W_median&#39;,</span>
+<span class="go">       &#39;X_mad&#39;, &#39;Y_mad&#39;, &#39;Z_mad&#39;, &#39;U_mad&#39;, &#39;V_mad&#39;, &#39;W_mad&#39;], dtype=&#39;object&#39;)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="startracer.SampledCluster.add_mean">
 <span class="sig-name descname"><span class="pre">add_mean</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster.add_mean" title="Permalink to this definition"></a></dt>
 <dd><p>Add mean of sampled orbits to summary DataFrame</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster_data</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;./example_data/ExampleCluster_1.fits&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span> <span class="o">=</span> <span class="n">Cluster</span><span class="p">(</span><span class="n">cluster_data</span><span class="p">)</span><span class="o">.</span><span class="n">sample_orbit</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">add_mean</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">summary_dataframe</span><span class="o">.</span><span class="n">columns</span>
+<span class="go">Index([&#39;t&#39;, &#39;X_mean&#39;, &#39;Y_mean&#39;, &#39;Z_mean&#39;, &#39;U_mean&#39;, &#39;V_mean&#39;, &#39;W_mean&#39;], dtype=&#39;object&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">summary_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[:</span><span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">]</span>
+<span class="go">0   -5.0</span>
+<span class="go">1   -4.0</span>
+<span class="go">2   -3.0</span>
+<span class="go">3   -2.0</span>
+<span class="go">4   -1.0</span>
+<span class="go">5    0.0</span>
+<span class="go">Name: t, dtype: float64</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -234,8 +269,9 @@ store them in a <code class="xref py py-class docutils literal notranslate"><spa
 <span class="sig-name descname"><span class="pre">add_percentile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">percentile</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.SampledCluster.add_percentile" title="Permalink to this definition"></a></dt>
 <dd><dl class="simple">
 <dt>Add percentiles of sampled orbits to summary DataFrame. Computes the percentile of the sampled orbits along</dt><dd><p>the second dimension. Saves the values for each parameter per timestep with the
-percentile-percentage in the column name. If there are several percentages given, each is computed and returned
-for all parameters. E.g. (prctl1, prctl2) -&gt; adds 12 column to the DataFrame (6 for prctl1 + 6 for prctl2).</p>
+percentile-percentage in the column name. If there are several percentages given, each is computed and
+returned for all parameters.
+E.g. (prctl1, prctl2) -&gt; adds 12 column to the DataFrame (6 for prctl1 + 6 for prctl2).</p>
 </dd>
 </dl>
 <dl class="field-list simple">
@@ -264,6 +300,18 @@ Needs to be between 0 and 100 (for details see numpy.percentile.) Single float o
 <dd class="field-even"><p>np.ndarray</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster_data</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;./example_data/ExampleCluster_1.fits&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span> <span class="o">=</span> <span class="n">Cluster</span><span class="p">(</span><span class="n">cluster_data</span><span class="p">)</span><span class="o">.</span><span class="n">sample_orbit</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster_sampled_data</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">cluster_sampled_data</span><span class="p">)</span>
+<span class="go">&lt;class &#39;numpy.ndarray&#39;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">cluster_sampled_data</span><span class="p">)</span>
+<span class="go">(7, 11, 1000)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -386,24 +434,34 @@ If input is an array, this order must be kept for the 12 columns/ rows.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="startracer.skycoord_from_table">
 <span class="sig-prename descclassname"><span class="pre">startracer.</span></span><span class="sig-name descname"><span class="pre">skycoord_from_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.skycoord_from_table" title="Permalink to this definition"></a></dt>
-<dd><p>create a 6D astropy.coordinates.SkyCoord from the input table
-(using ra, dec, parallax/ distance, pmra, pmdec, radial velocity).
-If no column is called ‘distance’, parallax is automatically converted to distance
-:param path_to_file: path to table file
-:type path_to_file: str
-:return: 6D SkyCoord object based on the data in the table
-:rtype: astropy.coordinates.SkyCoord</p>
+<dd><p>SkyCoord from table data</p>
+<p>Function to create a 6D astropy.coordinates.SkyCoord from the input table
+(using ra, dec, parallax/ distance, pmra, pmdec, radial velocity). If no column is called ‘distance’,
+parallax is automatically converted to distance by Monte Carlo-type sampling from the measurement and measurement
+uncertainty of the parallax.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path_to_file</strong> (<em>str</em>) – path to table file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>6D SkyCoord object based on the data in the table</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>astropy.coordinates.SkyCoord</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>KeyError: If the table has no column named ‘distance’ or ‘parallax’.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="startracer.traceback_stars_radec">
 <span class="sig-prename descclassname"><span class="pre">startracer.</span></span><span class="sig-name descname"><span class="pre">traceback_stars_radec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">sky_object_pv,</span> <span class="pre">t,</span> <span class="pre">reference_orbit_lsr=True,</span> <span class="pre">reference_object_pv=None,</span> <span class="pre">back=True,</span> <span class="pre">potential=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential</span> <span class="pre">object&gt;,</span> <span class="pre">&lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential</span> <span class="pre">object&gt;]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#startracer.traceback_stars_radec" title="Permalink to this definition"></a></dt>
 <dd><p>integrates coordinates and velocities relative to a reference frame</p>
-<dl class="simple">
-<dt>Calculate the traceback of one or more “sky objects” initialised by heliocentric equatorial coordinates</dt><dd><p>(as published by <em>GAIA</em>). Output is in Cartesian coordinates with the center of the coordinate system being the
+<p>Calculate the traceback of one or more “sky objects” initialised by heliocentric equatorial coordinates
+(as published by <em>GAIA</em>). Output is in Cartesian coordinates with the center of the coordinate system being the
 reference frame given.</p>
-</dd>
-</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

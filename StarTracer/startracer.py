@@ -8,7 +8,9 @@ from astropy.table import Table, QTable
 import pandas as pd
 import numpy as np
 
-# todo: make test paths relative
+# todo: mc type sampling for distance from parallax conversion
+# todo: include this in the documentation
+
 # todo: fix single star sampling
 # todo: if time left, include plot function
 
@@ -68,7 +70,7 @@ class Cluster:
             in Myr. Needs to be smaller than time_end and cannot be 0 (zero).
         :type time_step: astropy.units.Quantity, float, int
         :param number_of_samples: Number of times to bootstrap from cluster members. Defaults to 1000.
-        :type number_of_samples: int
+        :type number_of_samples: int, float
         :param direction: 'direction' of integration. Integration 'backward', 'forward' or 'both' (default).
         :type direction: str
         :param average_method: 'mean' or 'median' (default) Using either mean or median of each parameter
@@ -109,9 +111,12 @@ class Cluster:
             >>> from astropy.table import Table
             >>> cluster_data = Table.read('./example_data/ExampleCluster_1.fits')
             >>> cluster = Cluster(cluster_data)
-            >>> np.shape(cluster.sample_orbit(5, 1, number_of_samples=1000, direction='both').get_data())
+
+            >>> data_cluster_both = cluster.sample_orbit(5, 1, number_of_samples=1000, direction='both').get_data()
+            >>> np.shape(data_cluster_both)
             (7, 11, 1000)
-            >>> np.shape(cluster.sample_orbit(5, 1, direction='backward').get_data())
+            >>> data_cluster_back = cluster.sample_orbit(5, 1, direction='backward').get_data()
+            >>> np.shape(data_cluster_back)
             (7, 6, 1000)
         """
 
@@ -156,6 +161,7 @@ class Cluster:
         # dim 0: 7 (for t, x, y, z, u, v, w)
         # dim 1: number of timesteps
         # dim 2: number of sampling repetitions
+        number_of_samples = int(number_of_samples)
         pt_array = np.zeros((7, array_length, number_of_samples))
 
         n_ra = np.zeros((number_of_samples,)) * unit.deg
@@ -291,7 +297,7 @@ class Cluster:
 
 
 class SampledCluster:
-    """Storing sampled integrated orbits. SampledOrbits stores the results of N sampled orbits
+    """Storing sampled integrated orbits. SampledCluster stores the results of N sampled orbits
     (:meth:`Cluster.sample_orbits`) as an array. Additionally, it provides several methods to summarise the results and
     store them in a :class:`pandas.DataFrame`. This summary DataFrame can also be converted to and returned as an
     :class:`astropy.table.Table` or QTable, as well as saved as a 'csv' or 'fits' file.
@@ -312,11 +318,47 @@ class SampledCluster:
 
         :return: Returns sampled traceback results from ``Cluster.sample_orbits`` as an array.
         :rtype: np.ndarray
+
+        Examples
+        ========
+
+        .. code-block::
+
+            >>> from astropy.table import Table
+            >>> cluster_data = Table.read('./example_data/ExampleCluster_1.fits')
+            >>> cluster = Cluster(cluster_data).sample_orbit(5, 1)
+
+            >>> cluster_sampled_data = cluster.get_data()
+            >>> type(cluster_sampled_data)
+            <class 'numpy.ndarray'>
+            >>> np.shape(cluster_sampled_data)
+            (7, 11, 1000)
         """
         return self.__data.copy()
 
     def add_mean(self):
         """Add mean of sampled orbits to summary DataFrame
+
+        Examples
+        ========
+
+        .. code-block::
+
+            >>> from astropy.table import Table
+            >>> cluster_data = Table.read('./example_data/ExampleCluster_1.fits')
+            >>> cluster = Cluster(cluster_data).sample_orbit(5, 1)
+
+            >>> cluster.add_mean()
+            >>> cluster.summary_dataframe.columns
+            Index(['t', 'X_mean', 'Y_mean', 'Z_mean', 'U_mean', 'V_mean', 'W_mean'], dtype='object')
+            >>> cluster.summary_dataframe.loc[:5, 't']
+            0   -5.0
+            1   -4.0
+            2   -3.0
+            3   -2.0
+            4   -1.0
+            5    0.0
+            Name: t, dtype: float64
         """
         self.summary_dataframe[['X_mean', 'Y_mean', 'Z_mean', 'U_mean', 'V_mean', 'W_mean']] = np.transpose(
             np.nanmean(self.__data[1:, :, :], axis=2))
@@ -329,6 +371,23 @@ class SampledCluster:
 
     def add_mad(self):
         """Add median absolut deviation of sampled orbits to summary DataFrame
+
+        Examples
+        ========
+
+        .. code-block::
+
+            >>> from astropy.table import Table
+            >>> cluster_data = Table.read('./example_data/ExampleCluster_1.fits')
+            >>> cluster = Cluster(cluster_data).sample_orbit(5, 1)
+
+            >>> cluster.add_median()
+            >>> cluster.summary_dataframe.columns
+            Index(['t', 'X_median', 'Y_median', 'Z_median', 'U_median', 'V_median', 'W_median'], dtype='object')
+            >>> cluster.add_mad()
+            >>> cluster.summary_dataframe.columns
+            Index(['t', 'X_median', 'Y_median', 'Z_median', 'U_median', 'V_median', 'W_median',
+                   'X_mad', 'Y_mad', 'Z_mad', 'U_mad', 'V_mad', 'W_mad'], dtype='object')
         """
         median_absolut_deviation = np.nanmedian(np.abs(np.subtract(
             self.__data[1:, :, :], np.nanmean(self.__data[1:, :, :], axis=2)[:, :, None])), axis=2)
@@ -344,8 +403,9 @@ class SampledCluster:
     def add_percentile(self, percentile):
         """Add percentiles of sampled orbits to summary DataFrame. Computes the percentile of the sampled orbits along
             the second dimension. Saves the values for each parameter per timestep with the
-            percentile-percentage in the column name. If there are several percentages given, each is computed and returned
-            for all parameters. E.g. (prctl1, prctl2) -> adds 12 column to the DataFrame (6 for prctl1 + 6 for prctl2).
+            percentile-percentage in the column name. If there are several percentages given, each is computed and
+            returned for all parameters.
+            E.g. (prctl1, prctl2) -> adds 12 column to the DataFrame (6 for prctl1 + 6 for prctl2).
 
         :param percentile: percentage(s) to compute percentile of.
             Needs to be between 0 and 100 (for details see numpy.percentile.) Single float or sequence of float.
@@ -419,57 +479,97 @@ class SampledCluster:
 
 
 class Stars:
-    """Here is the stars class doc missing
-    """
+    """Samples and integrates orbits from the input data
 
-    def __int__(self, input_data):
+    :param input_data: input file for stellar cluster members that is read by the ``read_table_to_df()`` function and
+        converted to a :class:`pandas.DataFrame`. If data is provided as a numpy.ndarray dimensions must be
+        (12xN) or (Nx12) with the 12 parameters being ['ra', 'ra_error', 'dec', 'dec_error', 'distance',
+        'distance_error', 'pmra', 'pmra_error', 'pmdec', 'pmdec_error', 'radial_velocity', 'radial_velocity_error']
+        in exactly this order.
+    :type input_data: str, pandas.DataFrame, astropy.table.Table, numpy.ndarray
+    """
+    def __init__(self, input_data):
         """Constructor method
         """
         self.data = read_table_to_df(input_data)
 
     def sample_orbit(self, time_end, time_step, number_of_samples=1000, direction='both',
-                     reference_orbit_lsr=True, reference_object_pv=None, potential=MWPotential2014):
-        """ (Re)sampled Orbit integration of a cluster of stars or individual stars
-
-        Draws N-times from a normal distribution with mean and standard deviation based on the measurement
-            and the measurement uncertainty. Returns an array containing all sampled orbits per timestep for each star.
-            The shape of the returned array is (number of stars x 7 (parameters) x number of timesteps x number of samples).
+                     reference_orbit_lsr=True, reference_object_pv=None, potential=MWPotential2014,
+                     print_out=False):
+        """Samples orbit integration for individual stars. Draws each coordinate and velocity from normal
+            distributions based on their measurement as mean and the measurement uncertainty as standard deviation,
+            respectively, N-times. Per star, each of the N samples are integrated and collected in a 4-dimensional
+            :class:`numpy.ndarray`. The shape of the returned array is
+            (number of stars x 7 (parameters) x number of timesteps x number of samples).
             The seven returned parameters are t, X, Y, Z, U, V, W.
 
-        :param number_of_samples: number of times to bootstrap (cluster)
-            or sample from the normal distribution (single star)
-        :type number_of_samples: int
-        :param time_end: absolut of integration time (if -17 Myr -> 17) given as astropy.units.Quantity with time unit.
+        :param time_end: absolut of integration time given as astropy.units.Quantity with time unit.
             If not a units.Quantity it is assumed to be in Myr.
         :type time_end: astropy.units.Quantity, int
         :param time_step: size of timestep as am astropy.units.Quantity. If not a units.Quantity the value
             is assumed to be in Myr.
         :type time_step: astropy.units.Quantity, float, int
+        :param number_of_samples: Number of times to sample from the normal distribution. Defaults to 1000.
+        :type number_of_samples: int, float
         :param direction: 'direction' of integration. Integration 'backward', 'forward' or 'both' (default).
         :type direction: str
-        :param reference_orbit_lsr: default True, False if LSR is not the reference frame.
+        :param reference_orbit_lsr: Defaults to True. False if LSR is not the reference frame.
             If False, it is necessary to provide position and velocities of the reference frame in the attribute
             'reference_object_pv'.
         :type reference_orbit_lsr: bool
-        :param reference_object_pv: positions and velocities of the reference frame. Default is None.
+        :param reference_object_pv: Positions and velocities of the reference frame. Defaults to None.
         :type reference_object_pv: 1D array or list
         :param potential: potential in which to integrate the orbit. Choose from galpy.potential and import or define
             a personalised potential
         :type potential: galpy.potential
+        :param print_out: If True, prints information and updates on integration. Defaults to False.
+        :type print_out: bool
 
-        :return: returns 3- or 4-dimensional array with bootstrapped or sampled and integrated orbits for each timestep
+        :return: Returns a 4-dimensional array with sampled and integrated orbits for each timestep and star
         :rtype: SampledStars
 
         :raises ValueError: If direction is not among "backward", "forward", or "both".
+        :raises ValueError: If either of time_end or time_step is 0 (zero) or time_step is
+            greater than or equal to time_end.
+
+        |
+
+        Examples
+        ========
+
+        Initialising all stars, sampling the position and velocities, integrating and storing in a numpy.ndarray (4D).
+        Can be accessed with the ``.get_data()`` method on the result from ``sample_orbit()``.
+
+        .. code-block::
+
+            >>> from astropy.table import Table
+            >>> import numpy as np
+
+            >>> star_data = Table.read('./example_data/ExampleCluster_1.fits')
+            >>> time_end, time_step, number_of_samples = 10, 1, 100
+            >>> star_orbits = Stars(star_data).sample_orbit(time_end, time_step, number_of_samples, direction='both')
+            >>> np.shape(star_orbits.get_data())
+
         """
 
         # convert data to pandas dataframe
         data = self.data
-        number_of_stars = len(data)
+        number_of_stars = len(data.index)
 
-        print('-' * 75)
-        print(f'Table contains {number_of_stars} stars that are used for orbit calculation.')
-        print('-' * 75)
+        time_end = np.abs(time_end)
+        time_step = np.abs(time_step)
+
+        if time_end == 0:
+            raise ValueError('time_end cannot be 0.')
+        elif time_step == 0:
+            raise ValueError('time_step cannot be 0.')
+        elif time_step >= time_end:
+            raise ValueError('time_step cannot be greater than or equal time_end.')
+
+        if print_out:
+            print('-' * 75)
+            print(f'Table contains {number_of_stars} stars that are used for orbit calculation.')
+            print('-' * 75)
 
         # create time array for integration and time step size for uniform presentation
         if (isinstance(time_end, unit.Quantity)) & (isinstance(time_step, unit.Quantity)):
@@ -488,16 +588,19 @@ class Stars:
             raise ValueError(f'direction={direction} is not valid.'
                              f'Set it to one of the following: "backward", "forward", "both" (default).')
 
-        print('... using Monte Carlo-type sampling for star tracebacks with method "stellar"')
+        if print_out:
+            print('... using Monte Carlo-type sampling for star tracebacks with method "stellar"')
         # setting output array with diemsions
         # dim 0: number of stars
         # dim 1: 7 (for t, x, y, z, u, v, w)
         # dim 2: number of timesteps
         # dim 3: number of bootstrapping repetitions
+        number_of_samples = int(number_of_samples)
         pt_array = np.zeros((number_of_stars, 7, array_length, number_of_samples))
 
-        print('... sampling from normal distribution of measurement and measurement uncertainty.')
-        print('... integrating orbits')
+        if print_out:
+            print('... sampling from normal distribution of measurement and measurement uncertainty.')
+            print('... integrating orbits')
         # coordinates as Quantities
         for star in range(number_of_stars):
 
@@ -593,71 +696,167 @@ class Stars:
             pt_array[star, 5, :, :] = np.transpose(v)
             pt_array[star, 6, :, :] = np.transpose(w)
 
-        print(f'... returning integrated stellar orbits as array with shape\n'
-              f' (number of stars x parameters x timesteps x samples).'
-              f'\n   -> here: ({number_of_stars} x 7 x {array_length} x {number_of_samples})\n')
+        if print_out:
+            print(f'... returning integrated stellar orbits as array with shape\n'
+                  f' (number of stars x parameters x timesteps x samples).'
+                  f'\n   -> here: ({number_of_stars} x 7 x {array_length} x {number_of_samples})\n')
 
         return SampledStars(pt_array)
 
 
 class SampledStars:
-    """ here is the sampled stars doc missing
+    """Storing sampled integrated orbits. SampledStars stores the results of N sampled orbits
+    (:meth:`Stars.sample_orbits`) as an array. Additionally, it provides several methods to summarise the results
+    per star and store them in a :class:`numpy.ndarray`. This summary array can also be converted to and returned as an
+    :class:`astropy.table.Table` or :class:`QTable`.
+
+    :param sampled_orbit_array: sampled traceback orbits resulting from :meth:`Stars.sample_orbits`.
+    :type sampled_orbit_array: numpy.ndarray
     """
 
     def __init__(self, sampled_orbit_array):
-        time_array = sampled_orbit_array[:, 0, :, 0]
 
-        self.summary_table = Table(time_array, names=['t'])
-        self.data = sampled_orbit_array
-        self.summary_table = None
+        self.__data = sampled_orbit_array
+        self.mean_array = None
+        self.std_array = None
+        self.median_array = None
+        self.mad_array = None
+        self.percentile_array = None
+
+    def get_data(self):
+        """Get array with sampled orbits
+
+        :return: Returns sampled traceback results from ``Cluster.sample_orbits`` as an array.
+        :rtype: np.ndarray
+        """
+        return self.__data.copy()
 
     def calculate_mean(self):
-        self.summary_table = np.nanmean(self.data, axis=3)
+        """Calculates the mean of sampled orbits per star
+
+        :return: Returns array with mean values for each star and timestep in axis 2.
+        :type: numpy.ndarray
+        """
+        self.mean_array = np.nanmean(self.__data, axis=3)
+        return self.mean_array
 
     def calculate_median(self):
-        self.summary_table[['X_median', 'Y_median', 'Z_median', 'U_median', 'V_median', 'W_median']] = np.transpose(
-            np.nanmedian(self.data, axis=2))
+        """Calculates the median of sampled orbits per star
+
+        :return: Returns array with median values for each star and timestep in axis 2.
+        :type: numpy.ndarray
+        """
+        self.median_array = np.nanmedian(self.__data, axis=3)
+        return self.median_array
 
     def calculate_mad(self):
+        """Calculates the median absolut deviation of sampled orbits per star
+
+        :return: Returns array with median absolut deviation values for each star and timestep in axis 2.
+        :type: numpy.ndarray
+        """
         median_absolut_deviation = np.nanmedian(np.abs(np.subtract(
-            self.data, np.nanmean(self.data, axis=2)[:, :, None])), axis=2)
-        self.summary_table[['X_mad', 'Y_mad', 'Z_mad', 'U_mad', 'V_mad', 'W_mad']] = np.transpose(
-            median_absolut_deviation)
+            self.__data, np.nanmean(self.__data, axis=3)[:, :, :, None])), axis=3)
+        self.mad_array = median_absolut_deviation
+        return self.mad_array
 
     def calculate_std(self):
-        self.summary_table[['X_std', 'Y_std', 'Z_std', 'U_std', 'V_std', 'W_std']] = np.transpose(
-            np.nanstd(self.data, axis=2))
+        """Calculates the standard deviation of sampled orbits per star
+
+        :return: Returns array with standard deviation values for each star and timestep in axis 2.
+        :type: numpy.ndarray
+        """
+        self.std_array = np.nanstd(self.__data, axis=3)
+        return self.std_array
+
+    def calculate_percentile(self, percentile):
+        """Calculates the percentiles of the given percentages for the sampled orbits per star
+            If there are several percentages given, each is computed and returned for all parameters as a 4-dimensional
+            array. E.g. (prctl1, prctl2) -> shape = (number of percentiles, number of stars, 7, number of timesteps).
+            Access each percentile per star per timestep by indexing the axis 0 (``percentile_array[x, :, :, :]``).
+
+        :param percentile: percentage(s) to compute percentile of.
+            Needs to be between 0 and 100 (for details see numpy.percentile.) Single float or sequence of float.
+        :type percentile: array-like
+
+        :return: 3-dimensional array if percentile is single value. 4-dimensional array
+            if percentile is a list of values.
+            Shape is (number of percentiles, number of stars, 7, number of timesteps).
+        :type: numpy.ndarray
+        """
+        self.percentile_array = np.nanpercentile(self.__data, percentile, axis=3)
+        return self.percentile_array
 
 
 def read_table_to_df(filepath_or_table):
     """Reading in a table and/or converting the input to a pandas.DataFrame, if it is not already.
 
+    If there is no column named "distance" in the input table, and there is a column named "parallax", the distance is
+    calculated with :class:àstropy.coordinates.Distance`. It samples from a normal distribution based on the parallax
+    as mean and the parallax_error as standard deviation for 1000 samples. Then each is converted to a distance and
+    finally, the mean and standard deviation from the 1000 samples are used as distance and distance_error
+    for each star.
+
     :param filepath_or_table: path to saved file, or table/ array. All versions need headers including
-        ['ra', 'ra_error', 'dec', 'dec_error', 'distance', 'distance_error', 'pmra', 'pmra_error', 'pmdec', 'pmdec_error',
-        'radial_velocity', 'radial_velocity_error'].
+        ['ra', 'ra_error', 'dec', 'dec_error', 'distance'/ 'parallax', 'distance_error'/ 'parallax_error',
+        'pmra', 'pmra_error', 'pmdec', 'pmdec_error', 'radial_velocity', 'radial_velocity_error'].
         If input is an array, this order must be kept for the 12 columns/ rows.
     :type filepath_or_table: str, np.ndarray, pd.DataFrame, astropy.table.Table
 
     :return: DataFrame of input
     :rtype: pd.DataFrame
 
-    :raises TypeError: if input is neither a str, pandas.DataFrame, astropy.table.Table, or numpy.ndarray
+    :raises TypeError: If input is neither a str, pandas.DataFrame, astropy.table.Table, or numpy.ndarray
+    :raises ValueError: If input table has no column 'distance' or 'parallax'.
     """
     column_names = ['ra', 'ra_error', 'dec', 'dec_error', 'distance', 'distance_error',
                     'pmra', 'pmra_error', 'pmdec', 'pmdec_error', 'radial_velocity', 'radial_velocity_error']
-
+    distance_sample = 1000
     # if input is a str it is assumed to be a path to the file location
     # file is loaded as Table, making it independent of file format
     if isinstance(filepath_or_table, str):
         itable = Table.read(filepath_or_table)
+        if 'distance' not in itable.colnames:
+            if 'parallax' in itable.colnames:
+                print('No column named "distance" found.'
+                      'Sampling "distance" and "distance_error" from "parallax" and "parallax_error".')
+                n_plx = np.random.normal(itable['parallax'], itable['parallax_error'],
+                                         (distance_sample, len(itable['parallax'])))
+                d = Distance(parallax=n_plx * unit.mas)
+                itable['distance'] = np.nanmean(d.value, axis=0)
+                itable['distance_error'] = np.nanstd(d.value, axis=0)
+            else:
+                raise ValueError('No column named "parallax" or "distance" in input table.')
         df = itable.to_pandas()
 
     # if input is a astropy.table.Table, it is converted to dataframe
     elif isinstance(filepath_or_table, Table):
+        if 'distance' not in filepath_or_table.colnames:
+            if 'parallax' in filepath_or_table.colnames:
+                print('No column named "distance" found.'
+                      'Sampling "distance" and "distance_error" from "parallax" and "parallax_error".')
+                n_plx = np.random.normal(filepath_or_table['parallax'], filepath_or_table['parallax_error'],
+                                         (distance_sample, len(filepath_or_table['parallax'])))
+                d = Distance(parallax=n_plx * unit.mas)
+                filepath_or_table['distance'] = np.nanmean(d.value, axis=0)
+                filepath_or_table['distance_error'] = np.nanstd(d.value, axis=0)
+            else:
+                raise ValueError('No column named "parallax" or "distance" in input table.')
         df = filepath_or_table.to_pandas()
 
     # if input is a dataframe, it will be returned as such
     elif isinstance(filepath_or_table, pd.DataFrame):
+        if 'distance' not in filepath_or_table.columns:
+            if 'parallax' in filepath_or_table.colnames:
+                print('No column named "distance" found.'
+                      'Sampling "distance" and "distance_error" from "parallax" and "parallax_error".')
+                n_plx = np.random.normal(filepath_or_table['parallax'], filepath_or_table['parallax_error'],
+                                         (distance_sample, len(filepath_or_table['parallax'])))
+                d = Distance(parallax=n_plx * unit.mas)
+                filepath_or_table['distance'] = np.nanmean(d.value, axis=0)
+                filepath_or_table['distance_error'] = np.nanstd(d.value, axis=0)
+            else:
+                raise ValueError('No column named "parallax" or "distance" in input table.')
         df = filepath_or_table
 
     # if input is a numpy array it is assumed to be the input data and converted to a dataframe,
@@ -682,8 +881,8 @@ def traceback_stars_radec(sky_object_pv, t, reference_orbit_lsr=True, reference_
     """ integrates coordinates and velocities relative to a reference frame
 
     Calculate the traceback of one or more "sky objects" initialised by heliocentric equatorial coordinates
-        (as published by *GAIA*). Output is in Cartesian coordinates with the center of the coordinate system being the
-        reference frame given.
+    (as published by *GAIA*). Output is in Cartesian coordinates with the center of the coordinate system being the
+    reference frame given.
 
     :param sky_object_pv: position and velocity of traceable object(s), in the form
         [ra, dec, distance, pmra, pmdec, radial velocity]. Single values or array of values for each coordinate.
@@ -806,14 +1005,20 @@ def traceback_stars_radec(sky_object_pv, t, reference_orbit_lsr=True, reference_
 
 
 def skycoord_from_table(path_to_file):
-    """
-    create a 6D astropy.coordinates.SkyCoord from the input table
-    (using ra, dec, parallax/ distance, pmra, pmdec, radial velocity).
-    If no column is called 'distance', parallax is automatically converted to distance
+    """SkyCoord from table data
+
+    Function to create a 6D astropy.coordinates.SkyCoord from the input table
+    (using ra, dec, parallax/ distance, pmra, pmdec, radial velocity). If no column is called 'distance',
+    parallax is automatically converted to distance by Monte Carlo-type sampling from the measurement and measurement
+    uncertainty of the parallax.
+
     :param path_to_file: path to table file
     :type path_to_file: str
+
     :return: 6D SkyCoord object based on the data in the table
     :rtype: astropy.coordinates.SkyCoord
+
+    :raises: KeyError: If the table has no column named 'distance' or 'parallax'.
     """
     itable = Table.read(path_to_file)
     column_names = itable.colnames
@@ -823,13 +1028,13 @@ def skycoord_from_table(path_to_file):
     elif ('distance' not in column_names) & ('parallax' in column_names):
         dist = Distance(itable['parallax']).to_value(unit.kpc)
     else:
-        raise 'Table has no column named "distance" or "parallax".'
+        raise KeyError('Table has no column named "distance" or "parallax".')
 
     skycoord_object = SkyCoord(ra=unit.Quantity(itable['ra'].value * unit.deg, copy=False),
                                dec=unit.Quantity(itable['dec'].value * unit.deg, copy=False),
                                distance=unit.Quantity(dist, unit.kpc, copy=False),
-                               pmra=unit.Quantity(itable['pmra'].value * unit.mas / unit.yr, copy=False),
-                               pmdec=unit.Quantity(itable['pmdec'].value * unit.mas / unit.yr, copy=False),
+                               pm_ra_cosdec=unit.Quantity(itable['pmra'].value * unit.mas / unit.yr, copy=False),
+                               pm_dec=unit.Quantity(itable['pmdec'].value * unit.mas / unit.yr, copy=False),
                                radial_velocity=unit.Quantity(itable['radial_velocity'].value * unit.km / unit.s,
                                                              copy=False))
 
