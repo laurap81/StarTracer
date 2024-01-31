@@ -1,4 +1,7 @@
 [![codecov](https://codecov.io/gh/laurap81/StarTracer/graph/badge.svg?token=ZHUR8G0A3Z)](https://codecov.io/gh/laurap81/StarTracer)
+[![readthedocs](https://readthedocs.org/projects/<project-slug>/badge/?version=<version>&style=<style>)
+](https://startracer.readthedocs.io/en/latest/startracer.html)
+
 
 # StarTracer
 ```
