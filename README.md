@@ -150,7 +150,7 @@ The integrated orbits can be averaged like so:
 (50, 7, 101) (50, 7, 101) (2, 50, 7, 101)
 ```
 
-### License
+## License
 
 This package is licensed under the [MIT License](https://choosealicense.com/).
 For details, please refer to the License tab at the top of the README page.
