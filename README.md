@@ -27,15 +27,18 @@ and [Quantity](https://docs.astropy.org/en/stable/units/quantity.html) classes.
 The code offers two features: (i) integrating a cluster orbits, which is based on the average position and motion of
 its cluster members and (ii) integrating orbits for individual stars (independent of cluster membership). 
 Each method comes with different statistical sampling methods to estimate uncertainties for the orbit integration.
+Regarding the orbital integration, the code allows for customisation of the reference orbit
+(default is set to the LSR orbit). Additionally, users are able to choose any potential available at
+[galpy.potential](https://docs.galpy.org/en/v1.9.1/potential.html), including custom build potentials.
 
 - For cluster orbit integration:
-  - bootstrapping over the cluster members for an average cluster orbit integration
-  - methods to facilitate the calculation of averages and uncertainty estimation
+  - [x] bootstrapping over the cluster members for an average cluster orbit integration
+  - [x] methods to facilitate the calculation of averages and uncertainty estimation
   - [ ] _to be implemented_: sampling from a fit to the 6D cluster distribution
 
 - For stellar orbit integration:
-  - Monte Carlo-type sampling from a normal distribution based on measurement and measurement uncertainties
-  - again, methods to facilitate the calculation of averages and uncertainty estimation
+  - [x] Monte Carlo-type sampling from a normal distribution based on measurement and measurement uncertainties
+  - [x] again, methods to facilitate the calculation of averages and uncertainty estimation
 
 - For visualisation:
   - [ ] _to be implemented_: functions to visualise the resulting data (quick-check)
@@ -60,13 +63,15 @@ from the top level directory, after which you can import the library to your cod
 
 ## How to use StarTracer
 
-More examples can be found on the ReadTheDocs page of this project.
-[!note: insert link]
+More examples can be found on the ReadTheDocs page of this project. [!note: insert link]
+Also, some example code can be found in the **StarTracer directory**.
+
+#### For cluster orbit integration:
 
 1. loading in a data table and initialising a cluster based on this data:
 
 ```
->>> from StarTracer.startracer import Cluster
+>>> from StarTracer.startracer import Cluster, Stars
 >>> from astropy.table import Table
 >>> import numpy as np
 
@@ -123,8 +128,29 @@ Index(['t', 'X_median', 'Y_median', 'Z_median', 'U_median', 'V_median', 'W_media
 >>> sampled_cluster.save_table('Cluster_IntegratedOrbits.csv')
 ```
 
+#### For star orbit integrations:
+
 This works similarly for the `Stars` class that allows for orbit sampling from a normal distribution based on
 measurement value and uncertainty. However, the resulting array is 4-dimensional and after applying the methods to get
 the orbit averages and uncertainties for each star, we are still left with 3 dimensions.
 It cannot be stored to a output file yet.
 
+The integrated orbits can be averaged like so:
+
+```
+>>> star_orbits = Stars(cluster_data).sample_orbit(10, 0.1, number_of_samples=10000, direction='backward')
+
+>>> mean_orbits = star_orbits.calculate_mean()                       # the mean of all sampled values for each
+                                                                     # position/ velocity per timestep
+>>> std_orbits = star_orbits.calculate_std()                         # the standard deviation
+>>> prctl_orbits = star_orbits.calculate_percentile((14, 86))        # the 14 and 86 percentiles
+
+>>> print(np.shape(mean_orbits), np.shape(std_orbits), np.shape(prctl_orbits))
+
+(50, 7, 101) (50, 7, 101) (2, 50, 7, 101)
+```
+
+### License
+
+This package is licensed under the [MIT License](https://choosealicense.com/).
+For details, please refer to the License tab at the top of the README page.

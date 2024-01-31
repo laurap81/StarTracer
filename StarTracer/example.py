@@ -37,7 +37,7 @@ for nos in range(int(number_of_samples / 2)):
 ax.plot(median_orbits['t'], median_orbits['Z_median'], 'tab:red')
 
 f1.tight_layout()
-f1.savefig('./example_data/Cluster1_Traceback.png', format='png', dpi=250)
+# f1.savefig('./example_data/Cluster1_Traceback.png', format='png', dpi=250)
 # plt.show()
 
 ##################################################################################
@@ -73,5 +73,15 @@ for strs in range(len(cluster2.data.index)):
     ax.plot(mean_orbits[strs, 0, :], mean_orbits[strs, 3, :], 'tab:red')
 
 f2.tight_layout()
-f2.savefig('./example_data/Cluster2_StarTraceback.png', format='png', dpi=250)
+# f2.savefig('./example_data/Cluster2_StarTraceback.png', format='png', dpi=250)
 # plt.show()
+
+
+star_orbits = Stars(path_to_table).sample_orbit(10, 0.1, number_of_samples=10000, direction='backward')
+
+mean_orbits = star_orbits.calculate_mean()                       # the mean of all sampled values for each
+                                                                 # position/ velocity per timestep
+std_orbits = star_orbits.calculate_std()                         # the standard deviation
+prctl_orbits = star_orbits.calculate_percentile((14, 86))        # the 14 and 86 percentiles
+
+print(np.shape(mean_orbits), np.shape(std_orbits), np.shape(prctl_orbits))
