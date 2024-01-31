@@ -23,7 +23,6 @@ classifiers = [
 dependencies = [
     "pytest~=8.0.0",
     "astropy~=5.2.2",
-    "startracer~=1.0.0",
     "pandas~=2.1.1",
     "numpy~=1.26.0",
     "galpy~=1.9.1",
