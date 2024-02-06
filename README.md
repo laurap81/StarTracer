@@ -190,7 +190,7 @@ or averaged separation for each cluster in one 'csv' file together.
 
 (1, 101, 1000)
 
->>> group_1.average_dataframe.head
+>>> group_1.average_dataframe.head()
 
         t  01_median    01_mad
 0   -10.0  17.786195  4.630371

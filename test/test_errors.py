@@ -1,6 +1,7 @@
 from astropy.table import Table
 import pytest
 import StarTracer.startracer as st
+import StarTracer.separation as sp
 
 
 test_data = Table.read('./StarTracer/example_data/ExampleCluster_1.fits')
