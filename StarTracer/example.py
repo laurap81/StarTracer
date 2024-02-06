@@ -84,7 +84,7 @@ f2.tight_layout()
 ##################################################################################
 # calculating the stats of the sampled orbits of several stars in
 # the example cluster 1
-# star_orbits = Stars(path_to_table).sample_orbit(10, 0.1, number_of_samples=10000, direction='backward')
+# star_orbits = Stars(path_to_table).sample_orbit(10, 0.1, number_of_samples=1000, direction='backward')
 #
 # mean_orbits = star_orbits.calculate_mean()  # the mean of all sampled values for each
 # # position/ velocity per timestep
@@ -112,5 +112,5 @@ group_1 = ClusterGroup(cluster_list=[sampled_cluster_1], cluster_label_list=['01
 separation_cluster_1_2 = group_1.calculate_cluster_separation(reference_cluster=sampled_cluster_2,
                                                               return_collected_array=True)
 print(np.shape(separation_cluster_1_2))
-print(group_1.average_dataframe.head()[:3])
+print(group_1.average_dataframe.head)#[:3])
 

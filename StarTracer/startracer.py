@@ -256,7 +256,8 @@ class Cluster:
             v = v_b[:, ::-1]
             w = w_b[:, ::-1]
 
-            tr = timerange[::-1] * (-1)
+            tr = timerange[::-1]
+            tr[:-1] *= (-1)
 
         else:
             # calculating future orbits
@@ -674,7 +675,8 @@ class Stars:
                 v = v_b[:, ::-1]
                 w = w_b[:, ::-1]
 
-                t = timerange[::-1] * (-1)
+                t = timerange[::-1]
+                t[:-1] *= (-1)
 
             else:
                 # calculating future orbits
