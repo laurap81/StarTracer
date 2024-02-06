@@ -13,8 +13,8 @@
 ```
 
 
-**StarTracer** is a python package that allows to integrate star and cluster orbits with statistical sampling methods
-in order to obtain an uncertainty estimation of the traceback result. It is mainly based on
+**StarTracer** is a Python package designed for integrating star and cluster orbits using statistical sampling methods.
+Its primary purpose is to provide an uncertainty estimation of the traceback result. It is mainly based on
 [galpy](https://docs.galpy.org/en/v1.9.1/) which is an [astropy](https://www.astropy.org/index.html)
 [affiliated package](https://www.astropy.org/affiliated/). StarTracer is also based on astropy,
 utilising the [Table](https://docs.astropy.org/en/stable/api/astropy.table.Table.html),
@@ -25,12 +25,17 @@ and [Quantity](https://docs.astropy.org/en/stable/units/quantity.html) classes.
 
 ## Features
 
-The code offers two features: (i) integrating a cluster orbits, which is based on the average position and motion of
-its cluster members and (ii) integrating orbits for individual stars (independent of cluster membership). 
-Each method comes with different statistical sampling methods to estimate uncertainties for the orbit integration.
-Regarding the orbital integration, the code allows for customisation of the reference orbit
-(default is set to the LSR orbit). Additionally, users are able to choose any potential available at
-[galpy.potential](https://docs.galpy.org/en/v1.9.1/potential.html), including custom build potentials.
+The code provides two main features: (i) Integration of cluster orbits, which is based on the average position and
+motion of its cluster members. (ii) Integration of orbits for individual stars, independent of cluster membership.
+
+Each feature uses an appropriate statistical sampling method to estimate uncertainties for the orbit integration.
+In terms of orbital integration, the code allows users to customize the reference orbit, with the default set to the
+LSR orbit. Additionally, users have the flexibility to choose any potential available at
+[galpy.potential](https://docs.galpy.org/en/v1.9.1/potential.html), including custom-built potentials.
+
+[!NOTE]
+EDIT 02.2024: A supplementary module named "separation" has been incorporated into the code. This module introduces
+a method for calculating the separation between a reference cluster and one or more clusters in a group.
 
 - For cluster orbit integration:
   - [x] bootstrapping over the cluster members for an average cluster orbit integration
@@ -40,6 +45,10 @@ Regarding the orbital integration, the code allows for customisation of the refe
 - For stellar orbit integration:
   - [x] Monte Carlo-type sampling from a normal distribution based on measurement and measurement uncertainties
   - [x] again, methods to facilitate the calculation of averages and uncertainty estimation
+
+- For orbit analysis:
+  - [x] A method to calculate the spatial separation between several clusters and one reference frame over time
+  - [ ] _to be implemented_: the same method to calculate the spatial separation between all stars over time
 
 - For visualisation:
   - [ ] _to be implemented_: functions to visualise the resulting data (quick-check)
@@ -113,7 +122,7 @@ for the integrated orbits. See the [documentation]() for a full list of the avai
 >>> sampled_cluster.add_mad()                       # the median absolut deviation
 >>> sampled_cluster.add_percentile((2.5, 97.5))     # the 2.5 and 97.5 percentiles
 
->>> print(sampled_cluster.summary_dataframe.columns)
+>>> sampled_cluster.summary_dataframe.columns
 
 Index(['t', 'X_median', 'Y_median', 'Z_median', 'U_median', 'V_median', 'W_median',
        'X_mad', 'Y_mad', 'Z_mad', 'U_mad', 'V_mad', 'W_mad',
@@ -145,10 +154,60 @@ The integrated orbits can be averaged like so:
 >>> std_orbits = star_orbits.calculate_std()                         # the standard deviation
 >>> prctl_orbits = star_orbits.calculate_percentile((14, 86))        # the 14 and 86 percentiles
 
->>> print(np.shape(mean_orbits), np.shape(std_orbits), np.shape(prctl_orbits))
+>>> np.shape(mean_orbits), np.shape(std_orbits), np.shape(prctl_orbits)
 
-(50, 7, 101) (50, 7, 101) (2, 50, 7, 101)
+((50, 7, 101) (50, 7, 101) (2, 50, 7, 101))
 ```
+
+#### Positional cluster separation over time:
+
+Using the ``separation.py`` module, import the ClusterGroup class. The ClusterGroup can be initialised with one or more
+clusters. Its ``calculate_cluster_separation()`` method calculates the spatial separation over time to a
+reference cluster, that is an input of the method. Separation can be saved for each cluster (averaged or not averaged)
+or averaged separation for each cluster in one 'csv' file together.
+
+```
+>>> from StarTracer.startracer import Cluster
+>>> from StarTracer.separation import ClusterGroup
+>>> import numpy as np
+
+>>> # initialising both clusters
+>>> cluster_1_data = Table.read('./example_data/ExampleCluster_1.fits')
+>>> cluster_1 = Cluster(cluster_1_data)
+>>> cluster_2_data = Table.read('./example_data/ExampleCluster_2.fits')
+>>> cluster_2 = Cluster(cluster_2_data)
+
+>>> # sampling orbit traceback for both clusters
+>>> sampled_cluster_1 = cluster_1.sample_orbit(10, 0.1, number_of_samples=1000, direction='backward')
+>>> sampled_cluster_2 = cluster_2.sample_orbit(10, 0.1, number_of_samples=1000, direction='backward')
+
+>>> # calculating cluster sepration to reference cluster (cluster_2)
+>>> # for each cluster (here only cluster_1), timestep and sample
+>>> group_1 = ClusterGroup(cluster_list=[sampled_cluster_1], cluster_label_list=['01'], cluster_group_name='group1')
+>>> separation_cluster_1_2 = group_1.calculate_cluster_separation(reference_cluster=sampled_cluster_2,
+                                                                  return_collected_array=True)
+>>> np.shape(separation_cluster_1_2)
+
+(1, 101, 1000)
+
+>>> group_1.average_dataframe.head
+
+        t  01_median    01_mad
+0   -10.0  17.786195  4.630371
+1    -9.9  17.549027  4.584467
+2    -9.8  17.321228  4.534348
+3    -9.7  17.095397  4.485154
+4    -9.6  16.865780  4.441097
+..    ...        ...       ...
+96   -0.4   8.205172  1.119309
+97   -0.3   8.438620  1.097481
+98   -0.2   8.664430  1.082462
+99   -0.1   8.884338  1.081523
+100  -0.0   9.095192  1.076424
+
+[101 rows x 3 columns]>                                                        
+```
+
 
 ## License
 

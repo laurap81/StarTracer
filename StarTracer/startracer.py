@@ -1,4 +1,3 @@
-import pandas
 from galpy.potential import MWPotential2014
 from galpy.orbit import Orbit
 from astropy.coordinates import Galactocentric, LSR, Distance, SkyCoord
@@ -16,7 +15,7 @@ import numpy as np
 
 
 class Cluster:
-    """Samples and integrates orbits from the input data
+    """Samples and integrates orbits from the input data.
 
     :param input_data: input file for stellar cluster members that is read by the ``read_table_to_df()`` function and
         converted to a :class:`pandas.DataFrame`. If data is provided as a numpy.ndarray dimensions must be
@@ -56,12 +55,13 @@ class Cluster:
     def sample_orbit(self, time_end, time_step, number_of_samples=1000, direction='both', average_method='median',
                      reference_orbit_lsr=True, reference_object_pv=None, potential=MWPotential2014,
                      print_out=False):
-        """Resamples orbit integration for a cluster of stars. Bootstraps N-times over the stellar cluster members with
-            replacement. For details see pandas.DataFrame.sample().
-            Averages of the positions and velocities of each of the N samples are integrated and collected in a
-            3-dimensional numpy.ndarray.
-            The shape of the returned array is (7 (parameters) x number of timesteps x number of samples).
-            The seven parameters are t, X, Y, Z, U, V, W.
+        """Resamples orbit integration for a cluster of stars.
+
+        Bootstraps N-times over the stellar cluster members with replacement. For details see pandas.DataFrame.sample().
+        Averages of the positions and velocities of each of the N samples are integrated and collected in a
+        3-dimensional numpy.ndarray.
+        The shape of the returned array is (7 (parameters) x number of timesteps x number of samples).
+        The seven parameters are t, X, Y, Z, U, V, W.
 
         :param time_end: Value of integration time given as astropy.units.Quantity with time unit.
             If not given as astropy.units.Quantity it is assumed to be in Myr. Cannot be 0 (zero).
@@ -70,23 +70,23 @@ class Cluster:
             in Myr. Needs to be smaller than time_end and cannot be 0 (zero).
         :type time_step: astropy.units.Quantity, float, int
         :param number_of_samples: Number of times to bootstrap from cluster members. Defaults to 1000.
-        :type number_of_samples: int, float
+        :type number_of_samples: int, float, optional
         :param direction: 'direction' of integration. Integration 'backward', 'forward' or 'both' (default).
-        :type direction: str
+        :type direction: str, optional
         :param average_method: 'mean' or 'median' (default) Using either mean or median of each parameter
             (ra, dec, plx, pmra, pmdec, v_r) of the resampled selection of stars for integration per draw.
-        :type average_method: str
+        :type average_method: str, optional
         :param reference_orbit_lsr: default True, False if LSR is not the reference frame.
             If False, it is necessary to provide position and velocities of the reference frame in the attribute
             'reference_object_pv'.
-        :type reference_orbit_lsr: bool
+        :type reference_orbit_lsr: bool, optional
         :param reference_object_pv: positions and velocities of the reference frame. Default is None.
-        :type reference_object_pv: 1D array or list
+        :type reference_object_pv: 1D array or list, optional
         :param potential: potential in which to integrate the orbit. Choose from galpy.potential and import or define
             a personalised potential
-        :type potential: galpy.potential
+        :type potential: galpy.potential, optional
         :param print_out: If True, prints information and updates on integration. Defaults to False.
-        :type print_out: bool
+        :type print_out: bool, optional
 
         :return: returns 3-dimensional numpy.ndarray with bootstrapped and integrated orbits for each timestep
             and parameter (t, X, Y, Z, U, V, W).
@@ -297,10 +297,12 @@ class Cluster:
 
 
 class SampledCluster:
-    """Storing sampled integrated orbits. SampledCluster stores the results of N sampled orbits
-    (:meth:`Cluster.sample_orbits`) as an array. Additionally, it provides several methods to summarise the results and
-    store them in a :class:`pandas.DataFrame`. This summary DataFrame can also be converted to and returned as an
-    :class:`astropy.table.Table` or QTable, as well as saved as a 'csv' or 'fits' file.
+    """Storing sampled integrated orbits.
+
+    SampledCluster stores the results of N sampled orbits (:meth:`Cluster.sample_orbits`) as an array.
+    Additionally, it provides several methods to summarise the results and store them in a :class:`pandas.DataFrame`.
+    This summary DataFrame can also be converted to and returned as an :class:`astropy.table.Table` or QTable,
+    as well as saved as a 'csv' or 'fits' file.
 
     :param sampled_orbit_array: sampled traceback orbits resulting from :meth:`Cluster.sample_orbits`.
     :type sampled_orbit_array: numpy.ndarray
@@ -383,11 +385,14 @@ class SampledCluster:
 
             >>> cluster.add_median()
             >>> cluster.summary_dataframe.columns
-            Index(['t', 'X_median', 'Y_median', 'Z_median', 'U_median', 'V_median', 'W_median'], dtype='object')
+            Index(['t', 'X_median', 'Y_median', 'Z_median', 'U_median', 'V_median',
+                   'W_median'],
+                  dtype='object')
             >>> cluster.add_mad()
             >>> cluster.summary_dataframe.columns
-            Index(['t', 'X_median', 'Y_median', 'Z_median', 'U_median', 'V_median', 'W_median',
-                   'X_mad', 'Y_mad', 'Z_mad', 'U_mad', 'V_mad', 'W_mad'], dtype='object')
+            Index(['t', 'X_median', 'Y_median', 'Z_median', 'U_median', 'V_median',
+                   'W_median', 'X_mad', 'Y_mad', 'Z_mad', 'U_mad', 'V_mad', 'W_mad'],
+                  dtype='object')
         """
         median_absolut_deviation = np.nanmedian(np.abs(np.subtract(
             self.__data[1:, :, :], np.nanmean(self.__data[1:, :, :], axis=2)[:, :, None])), axis=2)
@@ -401,11 +406,13 @@ class SampledCluster:
             np.nanstd(self.__data[1:, :, :], axis=2))
 
     def add_percentile(self, percentile):
-        """Add percentiles of sampled orbits to summary DataFrame. Computes the percentile of the sampled orbits along
-            the second dimension. Saves the values for each parameter per timestep with the
-            percentile-percentage in the column name. If there are several percentages given, each is computed and
-            returned for all parameters.
-            E.g. (prctl1, prctl2) -> adds 12 column to the DataFrame (6 for prctl1 + 6 for prctl2).
+        """Add percentiles of sampled orbits to summary DataFrame.
+
+        Computes the percentile of the sampled orbits along
+        the second dimension. Saves the values for each parameter per timestep with the
+        percentile-percentage in the column name. If there are several percentages given, each is computed and
+        returned for all parameters.
+        E.g. (prctl1, prctl2) -> adds 12 column to the DataFrame (6 for prctl1 + 6 for prctl2).
 
         :param percentile: percentage(s) to compute percentile of.
             Needs to be between 0 and 100 (for details see numpy.percentile.) Single float or sequence of float.
@@ -425,13 +432,14 @@ class SampledCluster:
                  f'U_p{percentile}', f'V_p{percentile}', f'W_p{percentile}']] = np.transpose(orbit_percentiles)
 
     def to_astropy_table(self, include_units=False):
-        """Convert DataFrame to astropy.table.Table or QTable. Returns an astropy.table.Table or optional as
-            astropy.table.QTable that includes units for each column.
-            [t] is assumed to be Myr, coordinates are given in pc and velocities in km/s.
+        """Convert DataFrame to astropy.table.Table or QTable.
+
+        Returns an astropy.table.Table or optional as astropy.table.QTable that includes units for each column.
+        [t] is assumed to be Myr, coordinates are given in pc and velocities in km/s.
 
         :param include_units: Default is False. If True, DataFrame is converted to a QTable that can store
             Quantities with unit information.
-        :type include_units: bool
+        :type include_units: bool, optional
 
         :return: astropy table, optionally with units
         :rtype: astropy.table.Table or astropy.table.QTable
@@ -461,7 +469,7 @@ class SampledCluster:
         :type path_to_file: str
         :param file_type: 'csv' (default) or 'fits' file. If 'fits' is chosen,
             DataFrame is first converted to astropy.table.Table in order to then write the data to fits file.
-        :type file_type: str
+        :type file_type: str, optional
 
         :raises ValueError: If file_type not 'csv' or 'fits'.
         """
@@ -472,14 +480,14 @@ class SampledCluster:
             astropy_table.write(path_to_file, format='fits', overwrite=True)
 
         elif file_type == 'csv':
-            self.summary_dataframe.to_csv(path_to_file)
+            self.summary_dataframe.to_csv(path_to_file, index=False)
 
         else:
             raise ValueError(f'file_type={file_type} is not valid. Set it to be either "csv" (default) or "fits".')
 
 
 class Stars:
-    """Samples and integrates orbits from the input data
+    """Samples and integrates orbits from the input data.
 
     :param input_data: input file for stellar cluster members that is read by the ``read_table_to_df()`` function and
         converted to a :class:`pandas.DataFrame`. If data is provided as a numpy.ndarray dimensions must be
@@ -496,12 +504,14 @@ class Stars:
     def sample_orbit(self, time_end, time_step, number_of_samples=1000, direction='both',
                      reference_orbit_lsr=True, reference_object_pv=None, potential=MWPotential2014,
                      print_out=False):
-        """Samples orbit integration for individual stars. Draws each coordinate and velocity from normal
-            distributions based on their measurement as mean and the measurement uncertainty as standard deviation,
-            respectively, N-times. Per star, each of the N samples are integrated and collected in a 4-dimensional
-            :class:`numpy.ndarray`. The shape of the returned array is
-            (number of stars x 7 (parameters) x number of timesteps x number of samples).
-            The seven returned parameters are t, X, Y, Z, U, V, W.
+        """Samples orbit integration for individual stars.
+
+        Draws each coordinate and velocity from normal
+        distributions based on their measurement as mean and the measurement uncertainty as standard deviation,
+        respectively, N-times. Per star, each of the N samples are integrated and collected in a 4-dimensional
+        :class:`numpy.ndarray`. The shape of the returned array is
+        (number of stars x 7 (parameters) x number of timesteps x number of samples).
+        The seven returned parameters are t, X, Y, Z, U, V, W.
 
         :param time_end: absolut of integration time given as astropy.units.Quantity with time unit.
             If not a units.Quantity it is assumed to be in Myr.
@@ -510,20 +520,20 @@ class Stars:
             is assumed to be in Myr.
         :type time_step: astropy.units.Quantity, float, int
         :param number_of_samples: Number of times to sample from the normal distribution. Defaults to 1000.
-        :type number_of_samples: int, float
+        :type number_of_samples: int, float, optional
         :param direction: 'direction' of integration. Integration 'backward', 'forward' or 'both' (default).
-        :type direction: str
+        :type direction: str, optional
         :param reference_orbit_lsr: Defaults to True. False if LSR is not the reference frame.
             If False, it is necessary to provide position and velocities of the reference frame in the attribute
             'reference_object_pv'.
-        :type reference_orbit_lsr: bool
+        :type reference_orbit_lsr: bool, optional
         :param reference_object_pv: Positions and velocities of the reference frame. Defaults to None.
-        :type reference_object_pv: 1D array or list
+        :type reference_object_pv: 1D array or list, optional
         :param potential: potential in which to integrate the orbit. Choose from galpy.potential and import or define
             a personalised potential
-        :type potential: galpy.potential
+        :type potential: galpy.potential, optional
         :param print_out: If True, prints information and updates on integration. Defaults to False.
-        :type print_out: bool
+        :type print_out: bool, optional
 
         :return: Returns a 4-dimensional array with sampled and integrated orbits for each timestep and star
         :rtype: SampledStars
@@ -549,7 +559,7 @@ class Stars:
             >>> time_end, time_step, number_of_samples = 10, 1, 100
             >>> star_orbits = Stars(star_data).sample_orbit(time_end, time_step, number_of_samples, direction='both')
             >>> np.shape(star_orbits.get_data())
-
+            (50, 7, 21, 100)
         """
 
         # convert data to pandas dataframe
@@ -705,23 +715,39 @@ class Stars:
 
 
 class SampledStars:
-    """Storing sampled integrated orbits. SampledStars stores the results of N sampled orbits
-    (:meth:`Stars.sample_orbits`) as an array. The shape of the stored array is
-    (number of stars x 7 (parameters) x number of timesteps x number of samples). Index for the parameters is
-    0: t, 1: X, 2: Y, 3: Z, 4: U, 5: V, 6: W.
+    """Storing sampled integrated orbits.
+
+    SampledStars stores the results of N sampled orbits (:meth:`Stars.sample_orbits`) as an array.
+    The shape of the stored array is (number of stars x 7 (parameters) x number of timesteps x number of samples).
+    Index for the parameters is 0: t, 1: X, 2: Y, 3: Z, 4: U, 5: V, 6: W.
     Additionally, it provides several methods to summarise the results per star and store them in a
     :class:`numpy.ndarray`. The methods collapse the integrated orbit array along axis 3.
+
+    :param sampled_orbit_array: sampled traceback orbits resulting from :meth:`Stars.sample_orbits`.
+    :type sampled_orbit_array: numpy.ndarray
+
+    |
+
+    Examples
+    ========
 
     To access the e.g. median values of X (index 1) for each star and all timesteps use
 
     .. code-block::
-        >>> stars = Stars('./example_data/ExampleCluster_1.fits')
-        >>> variable_name = SampledStars.calculate_median()
-        >>> for star in range(len(Stars(cluster_table).data.index)):
-        >>>    single_star_variable = variable_name[star, 1, ]
 
-    :param sampled_orbit_array: sampled traceback orbits resulting from :meth:`Stars.sample_orbits`.
-    :type sampled_orbit_array: numpy.ndarray
+        >>> stars = Stars('./example_data/ExampleCluster_1.fits')
+        >>> time_end, time_step, number_of_samples = 10, 1, 100
+        >>> star_orbits = stars.sample_orbit( time_end, time_step, number_of_samples, direction='both')
+        >>> sampled_stars = star_orbits.calculate_median()
+
+        >>> for star in range(len(stars.data.index)):
+        ...     single_star_median = sampled_stars[star, 1, :]
+        ...     if star == 0:
+        ...         print(f'median x positions (index 1) for star {star} per timestep ({len(single_star_median)}):')
+        ...         print(np.round(single_star_median, 1))
+        median x positions (index 1) for star 0 per timestep (21):
+        [ 92.2  97.6 103.  108.5 114.1 119.7 125.6 131.6 137.8 144.1 150.6 157.1
+         163.8 170.8 177.9 185.1 192.6 200.3 208.4 216.5 224.8]
     """
 
     def __init__(self, sampled_orbit_array):
@@ -781,10 +807,11 @@ class SampledStars:
         return self.std_array
 
     def calculate_percentile(self, percentile):
-        """Calculates the percentiles of the given percentages for the sampled orbits per star
-            If there are several percentages given, each is computed and returned for all parameters as a 4-dimensional
-            array. E.g. (prctl1, prctl2) -> shape = (number of percentiles, number of stars, 7, number of timesteps).
-            Access each percentile per star per timestep by indexing the axis 0 (``percentile_array[x, :, :, :]``).
+        """Calculates the percentiles of the given percentages for the sampled orbits per star.
+
+        If there are several percentages given, each is computed and returned for all parameters as a 4-dimensional
+        array. E.g. (prctl1, prctl2) -> shape = (number of percentiles, number of stars, 7, number of timesteps).
+        Access each percentile per star per timestep by indexing the axis 0 (``percentile_array[x, :, :, :]``).
 
         :param percentile: percentage(s) to compute percentile of.
             Needs to be between 0 and 100 (for details see numpy.percentile.) Single float or sequence of float.
@@ -889,7 +916,7 @@ def read_table_to_df(filepath_or_table):
 
 def traceback_stars_radec(sky_object_pv, t, reference_orbit_lsr=True, reference_object_pv=None, back=True,
                           potential=MWPotential2014):
-    """ integrates coordinates and velocities relative to a reference frame
+    """Integrates coordinates and velocities relative to a reference frame.
 
     Calculate the traceback of one or more "sky objects" initialised by heliocentric equatorial coordinates
     (as published by *GAIA*). Output is in Cartesian coordinates with the center of the coordinate system being the
@@ -904,15 +931,15 @@ def traceback_stars_radec(sky_object_pv, t, reference_orbit_lsr=True, reference_
     :param reference_orbit_lsr: default *True* for LSR as reference frame
         (X, Y, Z) = (0, 0, 0) pc and (U, V, W) = (-11.1, -12.24, -7.25) km/s.
         If *False*, [ra, dec, distance, pmra, pmdec, vr] needs to be passed to the reference_object_pv parameter
-    :type reference_orbit_lsr: bool
+    :type reference_orbit_lsr: bool, optional
     :param reference_object_pv: position and velocity of reference object if reference_orbit is *False*
-    :type reference_object_pv: list
+    :type reference_object_pv: list, optional
     :param back: default *True*, integrates backward in time (flips time sequence and velocities).
         If back is *False* integrates forward in time.
-    :type back: bool
+    :type back: bool, optional
     :param potential: default MWPotential2014, any other galpy potential can be passed
         (https://docs.galpy.org/en/latest/potential.html)
-    :type potential: galpy.potential
+    :type potential: galpy.potential, optional
 
     :return: x (increasing towards galactic center), y, z in pc and u, v, w in km/s.
      For each coordinate an array is returned with shape (len(t), len(sky_object_pv[any]):
@@ -1016,7 +1043,7 @@ def traceback_stars_radec(sky_object_pv, t, reference_orbit_lsr=True, reference_
 
 
 def skycoord_from_table(path_to_file):
-    """SkyCoord from table data
+    """Creates a SkyCoord object from table data.
 
     Function to create a 6D astropy.coordinates.SkyCoord from the input table
     (using ra, dec, parallax/ distance, pmra, pmdec, radial velocity). If no column is called 'distance',

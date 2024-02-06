@@ -18,8 +18,11 @@
 Welcome to StarTracer's documentation!
 ======================================
 
+StarTracer is a Python package designed for integrating star and cluster orbits using statistical sampling methods.
+Its primary purpose is to provide an uncertainty estimation of the traceback result.
+
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Contents:
 
    startracer.rst
