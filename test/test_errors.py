@@ -1,10 +1,10 @@
 from astropy.table import Table
 import pytest
-from StarTracer.startracer import Cluster, SampledCluster
+import StarTracer.startracer as st
 
 
 test_data = Table.read('./StarTracer/example_data/ExampleCluster_1.fits')
-test_cluster = Cluster(test_data)
+test_cluster = st.Cluster(test_data)
 
 
 def test_check_direction():

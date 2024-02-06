@@ -1,12 +1,12 @@
 from astropy.table import Table, QTable
 import pandas as pd
 import numpy as np
-from StarTracer.startracer import Stars, SampledStars
+import StarTracer.startracer as st
 
 filepath = './StarTracer/example_data/ExampleCluster_1.fits'
 test_data = Table.read(filepath)
 test_data_df = test_data.to_pandas()
-test_stars = Stars(test_data)
+test_stars = st.Stars(test_data)
 
 
 time_end = 2
@@ -19,12 +19,12 @@ def test_stars_type():
 
 
 def test_stars_type_from_string():
-    new_stars = Stars(filepath)
+    new_stars = st.Stars(filepath)
     assert isinstance(new_stars.data, pd.DataFrame)
 
 
 def test_stars_type_from_dataframe():
-    new_dfstars = Stars(test_data_df)
+    new_dfstars = st.Stars(test_data_df)
     assert isinstance(new_dfstars.data, pd.DataFrame)
 
 
