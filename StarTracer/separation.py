@@ -183,41 +183,41 @@ class ClusterGroup:
                 uncertainty_column = f'{cluster_label}_{uncertainty_method}'
                 df_single_save = average_separation_dataframe[['t', average_column, uncertainty_column]]
                 try:
-                    os.makedirs('../Tables/ClusterSeparation/')
+                    os.makedirs('../Tables/Cluster Separation/')
                 except FileExistsError:
                     # directory already exists
                     pass
                 if print_out:
-                    print(f'...saving table at ../Tables/ClusterSeparation/{cluster_label}_AverageSeparation.csv')
+                    print(f'...saving table at ../Tables/Cluster Separation/{cluster_label}_AverageSeparation.csv')
                     print('-' * 100)
-                df_single_save.to_csv(f'../Tables/ClusterSeparation/{cluster_label}_AverageSeparation.csv', index=False)
+                df_single_save.to_csv(f'../Tables/Cluster Separation/{cluster_label}_AverageSeparation.csv', index=False)
 
             if save_single_sampled:
                 try:
-                    os.makedirs('../Tables/ClusterSeparation/')
+                    os.makedirs('../Tables/Cluster Separation/')
                 except FileExistsError:
                     # directory already exists
                     pass
                 if print_out:
-                    print(f'...saving table at ../Tables/ClusterSeparation/{cluster_label}_SampledSeparation.csv')
+                    print(f'...saving table at ../Tables/Cluster Separation/{cluster_label}_SampledSeparation.csv')
                     print('-' * 100)
-                np.savetxt(f'../Tables/ClusterSeparation/{cluster_label}_SampledSeparation.csv',
+                np.savetxt(f'../Tables/Cluster Separation/{cluster_label}_SampledSeparation.csv',
                            separation_array, delimiter=",")
 
         self.average_dataframe = average_separation_dataframe
 
         if save_collected_average:
             try:
-                os.makedirs('../Tables/ClusterSeparation/')
+                os.makedirs('../Tables/Cluster Separation/')
             except FileExistsError:
                 # directory already exists
                 pass
             if print_out:
                 print(f'...saving table at ../Tables/'
-                      f'ClusterSeparation/{self.group_name}_Collected_AverageSeparation.csv')
+                      f'Cluster Separation/{self.group_name}_Collected_AverageSeparation.csv')
                 print('-' * 100)
             average_separation_dataframe.to_csv(
-                f'../Tables/ClusterSeparation/{self.group_name}_Collected_AverageSeparation.csv', index=False)
+                f'../Tables/Cluster Separation/{self.group_name}_Collected_AverageSeparation.csv', index=False)
 
         if return_collected_array:
             return self.separation
